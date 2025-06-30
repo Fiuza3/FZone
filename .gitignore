@@ -1,0 +1,48 @@
+# Dependências
+node_modules/
+.pnp/
+.pnp.js
+
+# Arquivos de ambiente
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Diretórios de build
+dist/
+build/
+out/
+.next/
+
+# Cache
+.npm
+.eslintcache
+.cache/
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# Arquivos de cobertura de testes
+coverage/
+
+# Arquivos temporários
+tmp/
+temp/
