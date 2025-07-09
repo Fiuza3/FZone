@@ -29,12 +29,13 @@ export const useStockStore = defineStore('stock', {
   },
   
   actions: {
-    async fetchProducts(filters = {}) {
+    async fetchProducts(filters = {}, sortBy = 'name', sortOrder = 'asc') {
       console.log('📦 Buscando produtos com filtros:', filters);
       this.loading = true;
       
       try {
-        const response = await api.get('/stock', { params: filters });
+        const params = { ...filters, sortBy, sortOrder };
+        const response = await api.get('/stock', { params });
         console.log(`✅ ${response.data.length} produtos carregados`);
         this.products = response.data;
         return this.products;

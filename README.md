@@ -1,104 +1,194 @@
-# 🚀 Super ERP Incrível
+# 🍫 FZone - Sistema de Gestão para Buffets
 
-> *"Porque gerenciar uma empresa não precisa ser tão doloroso quanto pisar em Lego descalço"*
+> *"Transformando eventos em experiências inesquecíveis com gestão profissional"*
 
-Olá, humano cansado de planilhas! Bem-vindo ao **Super ERP Incrível**, o sistema que vai fazer você se perguntar como sobreviveu tanto tempo usando papel e caneta (ou Excel, que às vezes é ainda pior).
+Bem-vindo ao **FZone**, o sistema completo de gestão desenvolvido especialmente para buffets e empresas de eventos. Gerencie seu negócio de forma profissional e eficiente!
 
-## 🤔 O que diabos é isso?
+## 🎯 O que é o FZone?
 
-É um ERP simples, mas poderoso, que vai ajudar você a:
+O FZone é um ERP completo e moderno que oferece:
 
-- **Gerenciar tarefas** - Para você parar de esquecer o que deveria estar fazendo
-- **Controlar estoque** - Porque "acho que ainda tem no depósito" não é uma estratégia
-- **Organizar finanças** - Para descobrir onde foi parar todo aquele dinheiro
-- **Administrar pessoas** - Porque Post-its com nomes colados na parede não é RH
+- **📅 Gestão de Eventos** - Planeje, organize e controle todos os seus eventos
+- **📋 Gerenciamento de Tarefas** - Mantenha sua equipe sempre organizada
+- **📦 Controle de Estoque** - Gerencie ingredientes e produtos com precisão
+- **💰 Gestão Financeira** - Controle receitas, despesas e margem de lucro
+- **👥 Recursos Humanos** - Administre sua equipe e folha de pagamento
+- **🏢 Multi-empresa** - Sistema isolado por empresa com controle de permissões
 
-Tudo isso com uma interface bonita que não parece que foi desenhada em 1997!
+Tudo isso com uma interface moderna, intuitiva e responsiva!
 
-## 🛠️ Tecnologias (ou "a parte que faz os nerds sorrirem")
+## 🛠️ Tecnologias Utilizadas
 
-- **Vue 3** - Porque React é muito mainstream
-- **MongoDB** - Onde guardamos seus dados quando você não está olhando
-- **Express** - O carteiro que entrega seus dados
-- **Tailwind CSS** - Para ficar bonito sem precisar de um designer
-- **JWT** - Para manter os intrusos longe (ou pelo menos tentar)
+### Frontend
+- **Vue 3** - Framework JavaScript reativo e moderno
+- **Pinia** - Gerenciamento de estado
+- **Vue Router** - Roteamento SPA
+- **Tailwind CSS** - Framework CSS utilitário
+- **Material Icons** - Ícones do Google
 
-## 🏃‍♂️ Como Rodar (Sem Tropeçar)
+### Backend
+- **Node.js** - Runtime JavaScript
+- **Express.js** - Framework web minimalista
+- **MongoDB** - Banco de dados NoSQL
+- **Mongoose** - ODM para MongoDB
+- **JWT** - Autenticação e autorização
+- **bcrypt** - Criptografia de senhas
+
+## 🚀 Como Instalar e Executar
 
 ### Pré-requisitos
 
-- **Node.js** - Se você não tem, em que caverna esteve vivendo?
-- **MongoDB** - Banco de dados para pessoas que odeiam SQL
-- **Paciência** - A mais importante de todas
+- **Node.js** (versão 16 ou superior)
+- **MongoDB** (local ou MongoDB Atlas)
+- **Git** para clonar o repositório
 
-### Passo 1: Clone o projeto (ou baixe, se você é desses)
+### Passo 1: Clone o Repositório
 
 ```bash
-git clone https://github.com/seu-usuario/super-erp-incrivel.git
-cd super-erp-incrivel
+git clone https://github.com/seu-usuario/fzone-erp.git
+cd fzone-erp
 ```
 
-### Passo 2: Configure o Backend (a parte chata, mas necessária)
+### Passo 2: Configure o Backend
 
 ```bash
 # Entre na pasta do backend
 cd backend
 
-# Instale as dependências (e reze para não ter conflitos)
+# Instale as dependências
 npm install
 
-# Crie um arquivo .env com estas configurações
-echo "PORT=3000
-MONGODB_URI=mongodb://localhost:27017/erp_database
-JWT_SECRET=minha_senha_super_secreta_que_ninguem_vai_adivinhar
-NODE_ENV=development" > .env
+# Crie o arquivo .env
+cp .env.example .env
 
-# Inicie o servidor e cruze os dedos
+# Configure as variáveis de ambiente no .env:
+PORT=3000
+MONGODB_URI=mongodb://localhost:27017/fzone_database
+JWT_SECRET=sua_chave_secreta_super_segura_aqui
+NODE_ENV=development
+FRONTEND_URL=http://localhost:5173
+
+# Inicie o servidor
 npm run dev
 ```
 
-Se tudo der certo (haha), você verá uma mensagem bonita no terminal. Se não der, bem... stackoverflow.com é seu amigo.
+O servidor estará rodando em `http://localhost:3000`
 
-### Passo 3: Configure o Frontend (a parte divertida)
+### Passo 3: Configure o Frontend
 
 ```bash
 # Volte para a pasta raiz e entre na pasta do frontend
-cd ..
-cd frontend
+cd ../frontend
 
-# Instale as dependências (e mais orações)
+# Instale as dependências
 npm install
 
 # Inicie o servidor de desenvolvimento
 npm run dev
 ```
 
-Agora abra seu navegador em `http://localhost:5173` e voilà! Se aparecer uma tela de login, deu certo. Se aparecer um erro, você ganhou a chance de praticar suas habilidades de debugging!
+O frontend estará disponível em `http://localhost:5173`
 
 ## 👤 Primeiro Acesso
 
-Como você é especial, criamos um usuário para você:
-
+### Usuário Padrão
 - **Email**: admin@example.com
 - **Senha**: admin123
+- **Empresa**: Buffet Chocolate com Menta
 
-(Sim, é uma senha horrível. Mude assim que entrar, pelo amor de tudo que é sagrado!)
+⚠️ **Importante**: Altere a senha padrão após o primeiro login!
+
+### Criando Novos Usuários
+1. Acesse o módulo **"Contas"** (apenas admin/owner)
+2. Clique em **"Convidar Funcionário"**
+3. Preencha email, cargo e departamento
+4. Envie o link de convite para o funcionário
+5. O funcionário criará sua própria senha
+
+## 📋 Funcionalidades Principais
+
+### 🎉 Gestão de Eventos
+- Criação e edição de eventos
+- Controle de status (Planejado → Confirmado → Em Andamento → Concluído)
+- Seleção de produtos do estoque
+- Definição de equipe e pagamentos
+- Controle de despesas adicionais
+- Cálculo automático de lucro e margem
+- Desconto automático do estoque quando confirmado
+
+### 📋 Tarefas
+- Criação e atribuição de tarefas
+- Controle de status e prioridades
+- Notificações automáticas
+
+### 📦 Estoque
+- Cadastro de produtos e ingredientes
+- Controle de quantidade e estoque mínimo
+- Alertas de baixo estoque
+- Relatórios de movimentação
+
+### 💰 Financeiro
+- Controle de receitas e despesas
+- Transações automáticas dos eventos
+- Relatórios financeiros
+- Cálculo de balanço
+
+### 👥 Recursos Humanos
+- Cadastro de funcionários
+- Controle de departamentos
+- Relatórios de folha de pagamento
+
+### 🔐 Sistema de Permissões
+- **Owner/Admin**: Acesso total
+- **Manager**: Pode criar/editar eventos
+- **Employee**: Acesso limitado por departamento
+- Controle granular por módulo
+
+## 🏢 Multi-empresa
+
+- Isolamento completo de dados por empresa
+- Sistema de convites para funcionários
+- Controle de permissões por empresa
+- Cada usuário vinculado a uma empresa específica
+
+## 🔔 Sistema de Notificações
+
+- Notificações em tempo real
+- Alertas de estoque baixo
+- Notificações de novos eventos
+- Histórico de notificações
 
 ## 🤝 Contribuindo
 
-Encontrou um bug? Tem uma ideia? Quer melhorar algo?
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
 
-1. Abra uma issue
-2. Faça um fork
-3. Crie uma branch
-4. Faça suas alterações
-5. Envie um PR
-6. Espere ansiosamente enquanto avaliamos
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+## 🆘 Suporte
+
+Se encontrar algum problema ou tiver dúvidas:
+
+1. Verifique a [documentação](docs/)
+2. Procure em [Issues](https://github.com/seu-usuario/fzone-erp/issues)
+3. Crie uma nova issue se necessário
 
 ## 📝 Notas Finais
 
-Este ERP foi feito com ❤️, ☕ e uma quantidade questionável de pizza. Se ele salvar você de pelo menos uma reunião desnecessária, consideramos nossa missão cumprida.
+O FZone foi desenvolvido especificamente para buffets e empresas de eventos, com foco na gestão completa do negócio. 
 
-Lembre-se: "Um ERP ruim é melhor que planilha nenhuma, mas um bom ERP é melhor que férias" - Alguém, provavelmente.
+**Principais diferenciais:**
+- ✅ Gestão completa de eventos com cálculo de lucro
+- ✅ Controle automático de estoque por evento
+- ✅ Sistema multi-empresa com isolamento de dados
+- ✅ Interface moderna e responsiva
+- ✅ Controle granular de permissões
 
-**Boa sorte e que a força dos dados esteja com você!**
+---
+
+**Desenvolvido com ❤️ para transformar a gestão de buffets e eventos!**

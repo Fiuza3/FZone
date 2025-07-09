@@ -15,6 +15,17 @@ const filters = ref({
   lowStock: false
 });
 
+const sortBy = ref('name');
+const sortOrder = ref('asc');
+
+const sortOptions = [
+  { value: 'name', label: 'Nome' },
+  { value: 'quantity', label: 'Estoque' },
+  { value: 'price', label: 'Preço' },
+  { value: 'category', label: 'Categoria' },
+  { value: 'createdAt', label: 'Data de Cadastro' }
+];
+
 // Opções de categoria
 const categoryOptions = [
   { value: '', label: 'Todas as categorias' },
@@ -32,7 +43,7 @@ const loadProducts = async () => {
   isLoading.value = true;
   
   try {
-    await stockStore.fetchProducts(filters.value);
+    await stockStore.fetchProducts(filters.value, sortBy.value, sortOrder.value);
     console.log(`✅ ${stockStore.products.length} produtos carregados`);
   } catch (error) {
     console.error('❌ Erro ao carregar produtos:', error);
@@ -52,7 +63,26 @@ const clearFilters = () => {
     category: '',
     lowStock: false
   };
+  sortBy.value = 'name';
+  sortOrder.value = 'asc';
   loadProducts();
+};
+
+// Alterna ordem de classificação
+const toggleSortOrder = () => {
+  sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+  applyFilters();
+};
+
+// Define campo de ordenação
+const setSortBy = (field) => {
+  if (sortBy.value === field) {
+    toggleSortOrder();
+  } else {
+    sortBy.value = field;
+    sortOrder.value = 'asc';
+    applyFilters();
+  }
 };
 
 // Navega para criar novo produto
@@ -144,17 +174,42 @@ onMounted(loadProducts);
           </label>
         </div>
         
-        <!-- Botões de ação -->
-        <div class="flex items-end space-x-2">
-          <button @click="applyFilters" class="btn btn-primary">
-            <span class="material-icons mr-1">search</span>
-            Filtrar
-          </button>
-          <button @click="clearFilters" class="btn btn-outline">
-            <span class="material-icons mr-1">clear</span>
-            Limpar
-          </button>
+        <!-- Ordenação -->
+        <div>
+          <label for="sort-filter" class="form-label">Ordenar por</label>
+          <div class="flex space-x-2">
+            <select
+              id="sort-filter"
+              v-model="sortBy"
+              class="form-input flex-1"
+              @change="applyFilters"
+            >
+              <option v-for="option in sortOptions" :key="option.value" :value="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+            <button 
+              @click="toggleSortOrder" 
+              class="btn btn-outline px-3"
+              :title="sortOrder === 'asc' ? 'Crescente' : 'Decrescente'"
+            >
+              <span class="material-icons">
+                {{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+              </span>
+            </button>
+          </div>
         </div>
+      </div>
+      
+      <div class="flex justify-end space-x-2 mt-4">
+        <button @click="applyFilters" class="btn btn-primary">
+          <span class="material-icons mr-1">search</span>
+          Filtrar
+        </button>
+        <button @click="clearFilters" class="btn btn-outline">
+          <span class="material-icons mr-1">clear</span>
+          Limpar
+        </button>
       </div>
     </div>
     
@@ -179,20 +234,52 @@ onMounted(loadProducts);
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Produto
+              <th 
+                @click="setSortBy('name')"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              >
+                <div class="flex items-center">
+                  Produto
+                  <span v-if="sortBy === 'name'" class="material-icons text-sm ml-1">
+                    {{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                  </span>
+                </div>
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 SKU
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Categoria
+              <th 
+                @click="setSortBy('category')"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              >
+                <div class="flex items-center">
+                  Categoria
+                  <span v-if="sortBy === 'category'" class="material-icons text-sm ml-1">
+                    {{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                  </span>
+                </div>
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Preço
+              <th 
+                @click="setSortBy('price')"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              >
+                <div class="flex items-center">
+                  Preço
+                  <span v-if="sortBy === 'price'" class="material-icons text-sm ml-1">
+                    {{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                  </span>
+                </div>
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Estoque
+              <th 
+                @click="setSortBy('quantity')"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              >
+                <div class="flex items-center">
+                  Estoque
+                  <span v-if="sortBy === 'quantity'" class="material-icons text-sm ml-1">
+                    {{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                  </span>
+                </div>
               </th>
               <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Ações

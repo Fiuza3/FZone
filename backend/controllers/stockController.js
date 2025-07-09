@@ -5,7 +5,7 @@ const getProducts = async (req, res) => {
   console.log('📦 Solicitação para listar produtos');
   
   try {
-    const { category, lowStock } = req.query;
+    const { category, lowStock, sortBy = 'name', sortOrder = 'asc' } = req.query;
     let filter = { company: req.user.company, isActive: true };
     
     // Filtro por categoria
@@ -14,7 +14,11 @@ const getProducts = async (req, res) => {
       console.log('🏷️ Filtrando por categoria:', category);
     }
     
-    const products = await Product.find(filter).sort({ name: 1 });
+    // Configura ordenação
+    const sortOptions = {};
+    sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    
+    const products = await Product.find(filter).sort(sortOptions);
     console.log(`📋 ${products.length} produtos encontrados`);
     
     // Filtro por baixo estoque (aplicado após busca para usar virtual)
