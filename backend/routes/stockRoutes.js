@@ -10,6 +10,7 @@ router.use(checkModulePermission('stock'));
 
 // Rotas CRUD
 router.get('/', stockController.getProducts);
+router.get('/search', stockController.searchProducts);
 router.post('/', stockController.createProduct);
 router.put('/:id', stockController.updateProduct);
 router.patch('/:id/adjust', stockController.adjustStock);

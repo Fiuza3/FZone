@@ -1,53 +1,64 @@
 const Company = require('../models/Company');
-const User = require('../models/User');
 
-// Criar nova empresa
-const createCompany = async (req, res) => {
+// ============================================================================
+// OBTER CONFIGURAÇÕES DA EMPRESA (Linhas 5-25)
+// ============================================================================
+/**
+ * Retorna dados completos da empresa do usuário logado
+ */
+const getCompanySettings = async (req, res) => {
   try {
-    const { name, email, phone, address } = req.body;
+    const company = await Company.findById(req.user.company);
     
-    const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    if (!company) {
+      return res.status(404).json({ error: 'Empresa não encontrada' });
+    }
     
-    const company = new Company({
-      name,
-      slug,
-      email,
-      phone,
-      address,
-      owner: req.user._id
-    });
-    
-    await company.save();
-    
-    // Atualiza o usuário para ser owner da empresa
-    await User.findByIdAndUpdate(req.user._id, {
-      company: company._id,
-      role: 'owner',
-      permissions: {
-        tasks: true,
-        stock: true,
-        finance: true,
-        hr: true
-      }
-    });
-    
-    res.status(201).json(company);
+    res.json(company);
   } catch (error) {
+    console.error('❌ Erro ao buscar configurações:', error);
     res.status(500).json({ error: error.message });
   }
 };
 
-// Obter dados da empresa
-const getCompany = async (req, res) => {
+// ============================================================================
+// ATUALIZAR CONFIGURAÇÕES DA EMPRESA (Linhas 27-55)
+// ============================================================================
+/**
+ * Atualiza dados da empresa (apenas owner/admin)
+ */
+const updateCompanySettings = async (req, res) => {
   try {
-    const company = await Company.findById(req.user.company).populate('owner', 'name email');
-    res.json(company);
+    // Verifica se usuário tem permissão
+    if (req.user.role !== 'owner' && req.user.role !== 'admin') {
+      return res.status(403).json({ 
+        error: 'Apenas proprietários e administradores podem alterar configurações da empresa' 
+      });
+    }
+    
+    const company = await Company.findByIdAndUpdate(
+      req.user.company,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    
+    if (!company) {
+      return res.status(404).json({ error: 'Empresa não encontrada' });
+    }
+    
+    console.log('✅ Configurações da empresa atualizadas:', company.name);
+    
+    res.json({
+      message: 'Configurações atualizadas com sucesso',
+      company
+    });
   } catch (error) {
+    console.error('❌ Erro ao atualizar configurações:', error);
     res.status(500).json({ error: error.message });
   }
 };
 
 module.exports = {
-  createCompany,
-  getCompany
+  getCompanySettings,
+  updateCompanySettings
 };

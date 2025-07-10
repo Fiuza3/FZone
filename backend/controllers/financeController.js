@@ -6,7 +6,7 @@ const getTransactions = async (req, res) => {
   
   try {
     const { type, category, startDate, endDate, status } = req.query;
-    let filter = {};
+    let filter = { company: req.user.company };
     
     // Aplicar filtros
     if (type) filter.type = type;
@@ -46,7 +46,8 @@ const createTransaction = async (req, res) => {
   try {
     const transactionData = {
       ...req.body,
-      createdBy: req.user._id
+      createdBy: req.user._id,
+      company: req.user.company
     };
     
     console.log('📝 Dados da transação:', transactionData);
@@ -78,8 +79,8 @@ const updateTransaction = async (req, res) => {
   console.log('✏️ Atualizando transação ID:', req.params.id);
   
   try {
-    const transaction = await Transaction.findByIdAndUpdate(
-      req.params.id,
+    const transaction = await Transaction.findOneAndUpdate(
+      { _id: req.params.id, company: req.user.company },
       req.body,
       { new: true, runValidators: true }
     ).populate('createdBy', 'name email');
@@ -112,7 +113,10 @@ const deleteTransaction = async (req, res) => {
   console.log('🗑️ Deletando transação ID:', req.params.id);
   
   try {
-    const transaction = await Transaction.findByIdAndDelete(req.params.id);
+    const transaction = await Transaction.findOneAndDelete({
+      _id: req.params.id,
+      company: req.user.company
+    });
     
     if (!transaction) {
       return res.status(404).json({ 
@@ -147,7 +151,7 @@ const getBalance = async (req, res) => {
     
     console.log('📅 Período:', start.toISOString(), 'até', end.toISOString());
     
-    const balance = await Transaction.calculateBalance(start, end);
+    const balance = await Transaction.calculateBalance(start, end, req.user.company);
     
     res.json({
       period: {
@@ -176,12 +180,13 @@ const getFinancialReport = async (req, res) => {
     const end = endDate ? new Date(endDate) : new Date();
     
     // Balanço geral
-    const balance = await Transaction.calculateBalance(start, end);
+    const balance = await Transaction.calculateBalance(start, end, req.user.company);
     
     // Transações por categoria
     const categoryReport = await Transaction.aggregate([
       {
         $match: {
+          company: req.user.company,
           date: { $gte: start, $lte: end },
           status: 'pago'
         }
@@ -202,6 +207,7 @@ const getFinancialReport = async (req, res) => {
     const paymentMethodReport = await Transaction.aggregate([
       {
         $match: {
+          company: req.user.company,
           date: { $gte: start, $lte: end },
           status: 'pago'
         }
@@ -236,11 +242,52 @@ const getFinancialReport = async (req, res) => {
   }
 };
 
+// Obter projeção financeira
+const getProjection = async (req, res) => {
+  console.log('🔮 Calculando projeção financeira');
+  
+  try {
+    const { months = 6 } = req.query;
+    
+    const projection = await Transaction.calculateProjection(req.user.company, parseInt(months));
+    
+    res.json(projection);
+  } catch (error) {
+    console.error('❌ Erro ao calcular projeção:', error);
+    res.status(500).json({ 
+      error: 'Erro ao calcular projeção',
+      details: error.message
+    });
+  }
+};
+
+// Listar transações fixas
+const getRecurringTransactions = async (req, res) => {
+  console.log('🔁 Listando transações fixas');
+  
+  try {
+    const transactions = await Transaction.find({
+      company: req.user.company,
+      isRecurring: true,
+      status: { $ne: 'cancelado' }
+    })
+    .populate('createdBy', 'name')
+    .sort({ createdAt: -1 });
+    
+    res.json(transactions);
+  } catch (error) {
+    console.error('❌ Erro ao listar transações fixas:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getTransactions,
   createTransaction,
   updateTransaction,
   deleteTransaction,
   getBalance,
-  getFinancialReport
+  getFinancialReport,
+  getProjection,
+  getRecurringTransactions
 };

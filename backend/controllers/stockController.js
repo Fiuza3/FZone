@@ -5,13 +5,22 @@ const getProducts = async (req, res) => {
   console.log('📦 Solicitação para listar produtos');
   
   try {
-    const { category, lowStock, sortBy = 'name', sortOrder = 'asc' } = req.query;
+    const { category, lowStock, sortBy = 'name', sortOrder = 'asc', search } = req.query;
     let filter = { company: req.user.company, isActive: true };
     
     // Filtro por categoria
     if (category) {
       filter.category = category;
       console.log('🏷️ Filtrando por categoria:', category);
+    }
+    
+    // Filtro por busca (nome ou SKU)
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { sku: { $regex: search, $options: 'i' } }
+      ];
+      console.log('🔍 Buscando por:', search);
     }
     
     // Configura ordenação
@@ -245,10 +254,43 @@ const getStockReport = async (req, res) => {
   }
 };
 
+// Busca produtos para autocomplete
+const searchProducts = async (req, res) => {
+  console.log('🔍 Busca para autocomplete');
+  
+  try {
+    const { q } = req.query;
+    
+    if (!q || q.length < 2) {
+      return res.json([]);
+    }
+    
+    const products = await Product.find({
+      company: req.user.company,
+      isActive: true,
+      $or: [
+        { name: { $regex: q, $options: 'i' } },
+        { sku: { $regex: q, $options: 'i' } }
+      ]
+    })
+    .select('name sku quantity')
+    .limit(10)
+    .sort({ name: 1 });
+    
+    console.log(`🔍 ${products.length} produtos encontrados para "${q}"`);
+    
+    res.json(products);
+  } catch (error) {
+    console.error('❌ Erro na busca:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getProducts,
   createProduct,
   updateProduct,
   adjustStock,
-  getStockReport
+  getStockReport,
+  searchProducts
 };

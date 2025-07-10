@@ -134,6 +134,20 @@ export const useStockStore = defineStore('stock', {
       } finally {
         this.loading = false;
       }
+    },
+    
+    async searchProducts(query) {
+      if (!query || query.length < 2) {
+        return [];
+      }
+      
+      try {
+        const response = await api.get('/stock/search', { params: { q: query } });
+        return response.data;
+      } catch (error) {
+        console.error('❌ Erro na busca:', error);
+        return [];
+      }
     }
   }
 });

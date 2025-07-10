@@ -5,6 +5,7 @@ import { useTaskStore } from '../stores/task';
 import { useStockStore } from '../stores/stock';
 import { useFinanceStore } from '../stores/finance';
 import { useHRStore } from '../stores/hr';
+import { useDashboardStore } from '../stores/dashboard';
 
 // Stores
 const authStore = useAuthStore();
@@ -12,6 +13,7 @@ const taskStore = useTaskStore();
 const stockStore = useStockStore();
 const financeStore = useFinanceStore();
 const hrStore = useHRStore();
+const dashboardStore = useDashboardStore();
 
 // Estado
 const isLoading = ref(true);
@@ -29,9 +31,12 @@ const hasHRAccess = computed(() => isAdmin.value || userDepartment.value === 'rh
 
 // Carrega dados do dashboard
 onMounted(async () => {
-  console.log('🔄 Carregando dados do dashboard');
+  console.log('🔄 Carregando dados do dashboard avançado');
   
   try {
+    loadingMessage.value = 'Carregando métricas...';
+    await dashboardStore.loadDashboard();
+    
     // Carrega tarefas (todos têm acesso)
     loadingMessage.value = 'Carregando tarefas...';
     await taskStore.fetchTasks();
@@ -54,9 +59,9 @@ onMounted(async () => {
       await hrStore.fetchEmployees();
     }
     
-    console.log('✅ Dados do dashboard carregados com sucesso');
+    console.log('✅ Dashboard avançado carregado com sucesso');
   } catch (error) {
-    console.error('❌ Erro ao carregar dados do dashboard:', error);
+    console.error('❌ Erro ao carregar dashboard:', error);
   } finally {
     isLoading.value = false;
   }
@@ -89,12 +94,79 @@ const formatCurrency = (value) => {
       <div class="card mb-6">
         <h2 class="text-xl font-semibold">Bem-vindo, {{ authStore.userName }}!</h2>
         <p class="text-gray-600 mt-2">
-          Este é o seu painel de controle do ERP. Aqui você pode visualizar informações importantes
-          sobre sua empresa e acessar rapidamente as principais funcionalidades.
+          Dashboard executivo da {{ authStore.user?.company?.name || 'sua empresa' }}. 
+          Acompanhe métricas em tempo real e tome decisões estratégicas.
         </p>
       </div>
       
-      <!-- Cards de resumo -->
+      <!-- Métricas Avançadas -->
+      <div v-if="dashboardStore.metrics" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <!-- Total de Eventos -->
+        <div class="card bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="font-semibold text-blue-100">Total de Eventos</h3>
+              <p class="text-3xl font-bold">{{ dashboardStore.metrics.events.total }}</p>
+              <p class="text-sm text-blue-100 mt-1">
+                {{ dashboardStore.metrics.events.thisMonth }} este mês
+              </p>
+            </div>
+            <div class="text-blue-200">
+              <span class="material-icons text-4xl">event</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Receita Mensal -->
+        <div class="card bg-gradient-to-r from-green-500 to-green-600 text-white">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="font-semibold text-green-100">Receita Mensal</h3>
+              <p class="text-3xl font-bold">{{ formatCurrency(dashboardStore.metrics.revenue.thisMonth) }}</p>
+              <p class="text-sm text-green-100 mt-1">
+                Crescimento: {{ dashboardStore.monthlyGrowth }}%
+              </p>
+            </div>
+            <div class="text-green-200">
+              <span class="material-icons text-4xl">trending_up</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Eventos Próximos -->
+        <div class="card bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="font-semibold text-purple-100">Próximos Eventos</h3>
+              <p class="text-3xl font-bold">{{ dashboardStore.metrics.events.upcoming }}</p>
+              <p class="text-sm text-purple-100 mt-1">
+                Próximos 30 dias
+              </p>
+            </div>
+            <div class="text-purple-200">
+              <span class="material-icons text-4xl">schedule</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Alertas -->
+        <div class="card bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="font-semibold text-orange-100">Alertas</h3>
+              <p class="text-3xl font-bold">{{ dashboardStore.totalAlerts }}</p>
+              <p class="text-sm text-orange-100 mt-1">
+                {{ dashboardStore.metrics.alerts.lowStock }} estoque baixo
+              </p>
+            </div>
+            <div class="text-orange-200">
+              <span class="material-icons text-4xl">warning</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Cards de resumo tradicionais -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <!-- Tarefas pendentes -->
         <div class="card bg-blue-50 border-l-4 border-blue-500">
@@ -166,6 +238,62 @@ const formatCurrency = (value) => {
               Gerenciar pessoas →
             </router-link>
           </div>
+        </div>
+      </div>
+      
+      <!-- Gráfico de Receitas -->
+      <div v-if="dashboardStore.revenueChart.length > 0" class="card mb-6">
+        <h2 class="section-title">Receitas dos Últimos 12 Meses</h2>
+        <div class="h-64 flex items-end justify-between space-x-2 p-4">
+          <div 
+            v-for="(month, index) in dashboardStore.revenueChart.slice(-12)" 
+            :key="index"
+            class="flex flex-col items-center flex-1"
+          >
+            <div 
+              class="bg-gradient-to-t from-blue-500 to-blue-300 rounded-t w-full transition-all hover:from-blue-600 hover:to-blue-400"
+              :style="{ height: `${Math.max((month.revenue / Math.max(...dashboardStore.revenueChart.map(m => m.revenue))) * 200, 10)}px` }"
+              :title="`${month.month}: ${formatCurrency(month.revenue)} (${month.events} eventos)`"
+            ></div>
+            <span class="text-xs text-gray-600 mt-2 transform -rotate-45 origin-left">
+              {{ month.month }}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Eventos Próximos -->
+      <div v-if="dashboardStore.upcomingEvents.length > 0" class="card mb-6">
+        <h2 class="section-title">Eventos Próximos</h2>
+        <div class="space-y-3">
+          <div 
+            v-for="event in dashboardStore.upcomingEvents.slice(0, 5)" 
+            :key="event._id"
+            class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            <div class="flex items-center space-x-3">
+              <div class="w-3 h-3 rounded-full" :class="{
+                'bg-yellow-400': event.status === 'planejado',
+                'bg-blue-400': event.status === 'confirmado',
+                'bg-green-400': event.status === 'em_andamento'
+              }"></div>
+              <div>
+                <h4 class="font-medium text-gray-900">{{ event.title }}</h4>
+                <p class="text-sm text-gray-600">{{ event.location }}</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-sm font-medium text-gray-900">
+                {{ new Date(event.startDate).toLocaleDateString('pt-BR') }}
+              </p>
+              <p class="text-sm text-green-600">{{ formatCurrency(event.revenue) }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 text-center">
+          <router-link to="/events" class="text-primary-600 hover:underline text-sm">
+            Ver todos os eventos →
+          </router-link>
         </div>
       </div>
       

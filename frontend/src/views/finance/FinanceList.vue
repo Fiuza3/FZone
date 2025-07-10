@@ -89,6 +89,11 @@ const goToReport = () => {
   router.push('/finance/report');
 };
 
+// Navega para projeção financeira
+const goToProjection = () => {
+  router.push('/finance/projection');
+};
+
 // Confirma exclusão de transação
 const confirmDelete = (transaction) => {
   transactionToDelete.value = transaction;
@@ -136,6 +141,10 @@ onMounted(loadTransactions);
     <div class="flex justify-between items-center mb-6">
       <h1 class="page-title">Gerenciamento Financeiro</h1>
       <div class="flex space-x-2">
+        <button @click="goToProjection" class="btn btn-outline flex items-center">
+          <span class="material-icons mr-1">trending_up</span>
+          Projeção
+        </button>
         <button @click="goToReport" class="btn btn-outline flex items-center">
           <span class="material-icons mr-1">assessment</span>
           Relatório

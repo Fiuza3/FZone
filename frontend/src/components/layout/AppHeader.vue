@@ -11,8 +11,13 @@ const showProfileMenu = ref(false);
 const showNotifications = ref(false);
 
 // Carrega notificações ao montar o componente
-onMounted(() => {
+onMounted(async () => {
   notificationStore.loadNotifications();
+  
+  // Carrega perfil com dados da empresa se não estiver carregado
+  if (!authStore.user?.company) {
+    await authStore.getProfile();
+  }
   
   // Adiciona notificação de boas-vindas apenas no primeiro acesso
   const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
@@ -124,9 +129,9 @@ const handleLogout = () => {
       </button>
     </div>
     
-    <!-- Título da página (pode ser dinâmico) -->
+    <!-- Nome da empresa -->
     <h1 class="text-xl font-semibold text-gray-800 hidden md:block">
-      Dashboard
+      {{ authStore.user?.company?.name || 'Dashboard' }}
     </h1>
     
     <!-- Espaçador -->

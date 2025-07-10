@@ -12,11 +12,15 @@ const notificationStore = useNotificationStore();
 const isLoading = ref(true);
 const filters = ref({
   category: '',
-  lowStock: false
+  lowStock: false,
+  search: ''
 });
 
 const sortBy = ref('name');
 const sortOrder = ref('asc');
+const searchResults = ref([]);
+const showSearchResults = ref(false);
+const searchTimeout = ref(null);
 
 const sortOptions = [
   { value: 'name', label: 'Nome' },
@@ -43,7 +47,11 @@ const loadProducts = async () => {
   isLoading.value = true;
   
   try {
-    await stockStore.fetchProducts(filters.value, sortBy.value, sortOrder.value);
+    const searchParams = { ...filters.value };
+    if (filters.value.search) {
+      searchParams.search = filters.value.search;
+    }
+    await stockStore.fetchProducts(searchParams, sortBy.value, sortOrder.value);
     console.log(`✅ ${stockStore.products.length} produtos carregados`);
   } catch (error) {
     console.error('❌ Erro ao carregar produtos:', error);
@@ -61,10 +69,13 @@ const applyFilters = () => {
 const clearFilters = () => {
   filters.value = {
     category: '',
-    lowStock: false
+    lowStock: false,
+    search: ''
   };
   sortBy.value = 'name';
   sortOrder.value = 'asc';
+  searchResults.value = [];
+  showSearchResults.value = false;
   loadProducts();
 };
 
@@ -83,6 +94,37 @@ const setSortBy = (field) => {
     sortOrder.value = 'asc';
     applyFilters();
   }
+};
+
+// Busca com autocomplete
+const onSearchInput = async () => {
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value);
+  }
+  
+  searchTimeout.value = setTimeout(async () => {
+    if (filters.value.search.length >= 2) {
+      searchResults.value = await stockStore.searchProducts(filters.value.search);
+      showSearchResults.value = true;
+    } else {
+      searchResults.value = [];
+      showSearchResults.value = false;
+    }
+  }, 300);
+};
+
+// Seleciona produto do autocomplete
+const selectSearchResult = (product) => {
+  filters.value.search = product.name;
+  showSearchResults.value = false;
+  applyFilters();
+};
+
+// Esconde resultados da busca
+const hideSearchResults = () => {
+  setTimeout(() => {
+    showSearchResults.value = false;
+  }, 200);
 };
 
 // Navega para criar novo produto
@@ -148,6 +190,36 @@ onMounted(loadProducts);
       <h2 class="text-lg font-semibold mb-4">Filtros</h2>
       
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Campo de busca -->
+        <div class="relative">
+          <label for="search-filter" class="form-label">Buscar Produto</label>
+          <input
+            id="search-filter"
+            v-model="filters.search"
+            @input="onSearchInput"
+            @blur="hideSearchResults"
+            type="text"
+            class="form-input"
+            placeholder="Nome ou SKU..."
+          />
+          
+          <!-- Resultados do autocomplete -->
+          <div 
+            v-if="showSearchResults && searchResults.length > 0"
+            class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
+          >
+            <div 
+              v-for="product in searchResults" 
+              :key="product._id"
+              @mousedown="selectSearchResult(product)"
+              class="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+            >
+              <div class="font-medium text-gray-900">{{ product.name }}</div>
+              <div class="text-sm text-gray-600">SKU: {{ product.sku }} | Estoque: {{ product.quantity }}</div>
+            </div>
+          </div>
+        </div>
+        
         <!-- Filtro de categoria -->
         <div>
           <label for="category-filter" class="form-label">Categoria</label>
@@ -174,31 +246,6 @@ onMounted(loadProducts);
           </label>
         </div>
         
-        <!-- Ordenação -->
-        <div>
-          <label for="sort-filter" class="form-label">Ordenar por</label>
-          <div class="flex space-x-2">
-            <select
-              id="sort-filter"
-              v-model="sortBy"
-              class="form-input flex-1"
-              @change="applyFilters"
-            >
-              <option v-for="option in sortOptions" :key="option.value" :value="option.value">
-                {{ option.label }}
-              </option>
-            </select>
-            <button 
-              @click="toggleSortOrder" 
-              class="btn btn-outline px-3"
-              :title="sortOrder === 'asc' ? 'Crescente' : 'Decrescente'"
-            >
-              <span class="material-icons">
-                {{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
-              </span>
-            </button>
-          </div>
-        </div>
       </div>
       
       <div class="flex justify-end space-x-2 mt-4">

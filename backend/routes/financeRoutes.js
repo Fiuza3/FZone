@@ -17,5 +17,7 @@ router.delete('/:id', financeController.deleteTransaction);
 // Relatórios financeiros
 router.get('/balance', financeController.getBalance);
 router.get('/report', financeController.getFinancialReport);
+router.get('/projection', financeController.getProjection);
+router.get('/recurring', financeController.getRecurringTransactions);
 
 module.exports = router;

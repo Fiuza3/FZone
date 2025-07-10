@@ -210,6 +210,19 @@
           <span class="material-icons mr-3">settings</span>
           <span>Configurações</span>
         </div>
+        
+        <!-- Configurações da Empresa -->
+        <div
+          v-if="authStore.isAdmin"
+          @click="navigateTo('/company-settings')"
+          :class="[
+            'p-3 rounded-md cursor-pointer flex items-center',
+            isActive('/company-settings') ? 'bg-primary-600' : 'hover:bg-gray-700',
+          ]"
+        >
+          <span class="material-icons mr-3">business</span>
+          <span>Empresa</span>
+        </div>
 
         <!-- Ajuda -->
         <div
@@ -423,6 +436,19 @@
             >
               <span class="material-icons mr-3">settings</span>
               <span>Configurações</span>
+            </div>
+            
+            <!-- Configurações da Empresa -->
+            <div
+              v-if="authStore.isAdmin"
+              @click="navigateTo('/company-settings')"
+              :class="[
+                'p-3 rounded-md cursor-pointer flex items-center',
+                isActive('/company-settings') ? 'bg-primary-600' : 'hover:bg-gray-700',
+              ]"
+            >
+              <span class="material-icons mr-3">business</span>
+              <span>Empresa</span>
             </div>
 
             <!-- Ajuda -->

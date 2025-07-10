@@ -99,24 +99,14 @@ export const useAuthStore = defineStore('auth', {
     },
     
     async getProfile() {
-      if (!this.token) return null;
-      
-      this.loading = true;
-      
       try {
-        // Em um caso real, isso seria uma chamada API
-        // const response = await api.get('/auth/profile');
-        
-        // Simulação para desenvolvimento - já temos os dados do usuário
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        return this.user;
+        const response = await api.get('/auth/profile');
+        this.user = response.data.user;
+        localStorage.setItem('user', JSON.stringify(this.user));
+        return response.data;
       } catch (error) {
-        console.error('❌ Erro ao buscar perfil:', error);
-        this.error = error.response?.data?.error || 'Erro ao buscar perfil';
-        return null;
-      } finally {
-        this.loading = false;
+        console.error('Erro ao buscar perfil:', error);
+        throw error;
       }
     },
     

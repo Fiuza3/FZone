@@ -17,12 +17,14 @@ const StockReport = () => import('../views/stock/StockReport.vue');
 const FinanceList = () => import('../views/finance/FinanceList.vue');
 const FinanceForm = () => import('../views/finance/FinanceForm.vue');
 const FinanceReport = () => import('../views/finance/FinanceReport.vue');
+const FinanceProjection = () => import('../views/finance/FinanceProjection.vue');
 const EmployeeList = () => import('../views/hr/EmployeeList.vue');
 const EmployeeForm = () => import('../views/hr/EmployeeForm.vue');
 const PayrollReport = () => import('../views/hr/PayrollReport.vue');
 const AccountsList = () => import('../views/accounts/AccountsList.vue');
 const AcceptInvite = () => import('../views/AcceptInvite.vue');
 const EventList = () => import('../views/events/EventList.vue');
+const CompanySettings = () => import('../views/CompanySettings.vue');
 const EventForm = () => import('../views/events/EventForm.vue');
 
 // Função para verificar autenticação
@@ -138,6 +140,12 @@ const routes = [
     beforeEnter: requireAuth
   },
   {
+    path: '/company-settings',
+    name: 'CompanySettings',
+    component: CompanySettings,
+    beforeEnter: requireAuth
+  },
+  {
     path: '/help',
     name: 'Help',
     component: () => import('../views/Help.vue'),
@@ -222,6 +230,12 @@ const routes = [
     path: '/finance/report',
     name: 'FinanceReport',
     component: FinanceReport,
+    beforeEnter: requirePermission('finance')
+  },
+  {
+    path: '/finance/projection',
+    name: 'FinanceProjection',
+    component: FinanceProjection,
     beforeEnter: requirePermission('finance')
   },
   

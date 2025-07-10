@@ -36,6 +36,19 @@ const transactionSchema = new mongoose.Schema({
     enum: ['pendente', 'pago', 'cancelado'],
     default: 'pago'
   },
+  isRecurring: {
+    type: Boolean,
+    default: false
+  },
+  recurringDay: {
+    type: Number,
+    min: 1,
+    max: 31,
+    default: 1
+  },
+  nextDueDate: {
+    type: Date
+  },
   reference: {
     type: String, // Pode referenciar uma venda, compra, etc.
     trim: true
@@ -65,13 +78,60 @@ transactionSchema.pre('save', function(next) {
   next();
 });
 
+// Método estático para calcular projeção
+transactionSchema.statics.calculateProjection = async function(companyId, months = 6) {
+  const now = new Date();
+  const endDate = new Date(now.getFullYear(), now.getMonth() + months, 0);
+  
+  // Busca transações fixas ativas
+  const recurringTransactions = await this.find({
+    company: companyId,
+    isRecurring: true,
+    status: { $ne: 'cancelado' }
+  });
+  
+  let projection = [];
+  let currentBalance = 0;
+  
+  // Calcula saldo atual
+  const currentBalanceData = await this.calculateBalance(null, now, companyId);
+  currentBalance = currentBalanceData.balance;
+  
+  // Projeta para os próximos meses
+  for (let i = 0; i < months; i++) {
+    const monthDate = new Date(now.getFullYear(), now.getMonth() + i + 1, 1);
+    let monthlyIncome = 0;
+    let monthlyExpenses = 0;
+    
+    recurringTransactions.forEach(transaction => {
+      if (transaction.type === 'receita') {
+        monthlyIncome += transaction.amount;
+      } else {
+        monthlyExpenses += transaction.amount;
+      }
+    });
+    
+    currentBalance += monthlyIncome - monthlyExpenses;
+    
+    projection.push({
+      month: monthDate.toISOString().slice(0, 7),
+      income: monthlyIncome,
+      expenses: monthlyExpenses,
+      balance: currentBalance
+    });
+  }
+  
+  return projection;
+};
+
 // Método estático para calcular balanço
-transactionSchema.statics.calculateBalance = async function(startDate, endDate) {
+transactionSchema.statics.calculateBalance = async function(startDate, endDate, companyId) {
   console.log('📊 Calculando balanço financeiro...');
   
   const pipeline = [
     {
       $match: {
+        company: companyId,
         date: {
           $gte: startDate || new Date('1900-01-01'),
           $lte: endDate || new Date()

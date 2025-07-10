@@ -19,6 +19,8 @@
     paymentMethod: "dinheiro",
     status: "pago",
     reference: "",
+    isRecurring: false,
+    recurringDay: 1
   });
 
   const isLoading = ref(false);
@@ -355,6 +357,43 @@
             class="form-input"
             placeholder="Número da nota, pedido, etc."
           />
+        </div>
+        
+        <!-- Transação Fixa -->
+        <div class="border-t border-gray-200 pt-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Transação Recorrente</h3>
+          
+          <div class="space-y-4">
+            <!-- Checkbox para ativar recorrência -->
+            <div class="flex items-center">
+              <input
+                id="is-recurring"
+                v-model="transaction.isRecurring"
+                type="checkbox"
+                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+              />
+              <label for="is-recurring" class="ml-2 text-sm text-gray-700">
+                Esta é uma transação fixa (repetir mensalmente)
+              </label>
+            </div>
+            
+            <!-- Dia do mês (apenas se recorrente) -->
+            <div v-if="transaction.isRecurring" class="max-w-xs">
+              <label for="recurring-day" class="form-label">Dia do mês para repetição</label>
+              <select
+                id="recurring-day"
+                v-model.number="transaction.recurringDay"
+                class="form-input"
+              >
+                <option v-for="day in 31" :key="day" :value="day">
+                  Dia {{ day }}
+                </option>
+              </select>
+              <p class="text-xs text-gray-500 mt-1">
+                A transação será repetida automaticamente todo mês neste dia
+              </p>
+            </div>
+          </div>
         </div>
 
         <!-- Botões de ação -->
