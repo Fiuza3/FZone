@@ -22,6 +22,7 @@ const financeRoutes = require('./routes/financeRoutes');
 const hrRoutes = require('./routes/hrRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
 const eventRoutes = require('./routes/eventRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 
 // Carrega variáveis de ambiente
 dotenv.config();
@@ -51,6 +52,7 @@ app.use('/api/finance', financeRoutes);
 app.use('/api/hr', hrRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Rota de status
 app.get('/api/status', (req, res) => {
