@@ -5,8 +5,11 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({
   plugins: [vue()],
   build: {
-    commonjsOptions: {
-      include: []
+    rollupOptions: {
+      external: [/^node:/],
     }
+  },
+  optimizeDeps: {
+    exclude: ['fsevents']
   }
 })
