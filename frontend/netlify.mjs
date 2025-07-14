@@ -1,4 +1,4 @@
-const { execSync } = require('child_process');
+import { execSync } from 'child_process';
 
 // Desabilita o uso de módulos nativos do Rollup
 process.env.ROLLUP_NATIVE = 'false';

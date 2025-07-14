@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node netlify.js",
+    "build": "node netlify.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
