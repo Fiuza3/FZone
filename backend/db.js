@@ -5,7 +5,11 @@ const connectDB = async () => {
   try {
     console.log('🔄 Conectando ao MongoDB...');
     
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+    // String de conexão segura via variável de ambiente ou fallback para string direta
+    const MONGODB_URI = process.env.MONGODB_URI || 
+      'mongodb+srv://devfiuza:Demerval739$@fzone.447xln8.mongodb.net/?retryWrites=true&w=majority&appName=FZone';
+    
+    const conn = await mongoose.connect(MONGODB_URI, {
       // As opções abaixo não são mais necessárias no Mongoose 6+
       // useNewUrlParser: true,
       // useUnifiedTopology: true,

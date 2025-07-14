@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Cria instância do axios com configurações padrão
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://fzone-api.onrender.com/api',
   headers: {
     'Content-Type': 'application/json'
   }
