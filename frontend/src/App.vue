@@ -11,6 +11,11 @@ const authStore = useAuthStore();
 const router = useRouter();
 const isLoading = ref(true);
 const mobileMenuOpen = ref(false);
+
+// Toggle menu mobile
+const toggleMobileMenu = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value;
+};
 const initialLoading = ref(true);
 
 // Verifica se o usuário está autenticado
@@ -52,7 +57,7 @@ onMounted(async () => {
     </div>
     
     <!-- Layout para usuários autenticados -->
-    <div v-else-if="isAuthenticated" class="flex h-screen overflow-hidden">
+    <div v-else-if="isAuthenticated" class="flex h-screen overflow-hidden bg-gray-50">
       <!-- Sidebar -->
       <AppSidebar 
         :mobile-menu-open="mobileMenuOpen"

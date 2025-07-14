@@ -1,0 +1,34 @@
+/* Estilos personalizados para o menu mobile */
+.mobile-menu-nav {
+  color: white !important;
+}
+
+.mobile-menu-nav p {
+  color: #cbd5e0 !important; /* text-gray-300 */
+}
+
+.mobile-menu-nav div {
+  color: white !important;
+}
+
+.mobile-menu-nav span {
+  color: white !important;
+}
+
+.mobile-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.mobile-menu-item.active {
+  background-color: #0284c7 !important; /* primary-600 */
+}
+
+/* Esconder barra de rolagem */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}

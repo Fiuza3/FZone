@@ -34,7 +34,7 @@
   const navigateTo = (path) => {
     console.log("🧭 Navegando para:", path);
     router.push(path);
-    mobileMenuOpen.value = false;
+    emit('toggle-mobile-menu');
   };
 
   // Toggle menu mobile
@@ -51,14 +51,14 @@
 </script>
 
 <template>
-  <aside class="bg-gray-800 text-white w-64 flex-shrink-0 hidden md:block">
+  <aside class="bg-gray-800 text-white w-64 flex-shrink-0 hidden md:flex md:flex-col h-screen sticky top-0">
     <!-- Props e eventos são ignorados neste componente -->
     <div class="p-4 border-b border-gray-700">
       <h1 class="text-xl font-bold">FZone</h1>
       <p class="text-sm text-gray-400">{{ authStore.userName }}</p>
     </div>
 
-    <nav class="p-2 space-y-1">
+    <nav class="p-2 space-y-1 overflow-y-auto flex-grow hide-scrollbar">
       <!-- Principais -->
       <div class="mb-2">
         <p
@@ -164,6 +164,18 @@
           <span class="material-icons mr-3">event</span>
           <span>Eventos</span>
         </div>
+        
+        <!-- Calendário -->
+        <div
+          @click="navigateTo('/calendar')"
+          :class="[
+            'p-3 rounded-md cursor-pointer flex items-center',
+            isActive('/calendar') ? 'bg-primary-600' : 'hover:bg-gray-700',
+          ]"
+        >
+          <span class="material-icons mr-3">calendar_month</span>
+          <span>Calendário</span>
+        </div>
 
         <!-- Contas -->
         <div
@@ -250,7 +262,7 @@
       </div>
     </nav>
 
-    <div class="absolute bottom-0 left-0 w-64 p-4 text-xs text-gray-500">
+    <div class="sticky bottom-0 left-0 w-64 p-4 text-xs text-gray-500 bg-gray-800">
       <p>FZone v1.0</p>
       <p>© {{ new Date().getFullYear() }}</p>
     </div>
@@ -261,14 +273,14 @@
     <!-- Overlay de fundo -->
     <div
       class="fixed inset-0 bg-gray-600 bg-opacity-75"
-      @click="mobileMenuOpen = false"
+      @click="emit('toggle-mobile-menu')"
     ></div>
 
     <!-- Menu lateral mobile -->
-    <div class="relative flex-1 flex flex-col max-w-xs w-full bg-gray-800">
+    <div class="relative flex-1 flex flex-col max-w-xs w-full bg-gray-800 text-white h-full">
       <div class="absolute top-0 right-0 -mr-12 pt-2">
         <button
-          @click="mobileMenuOpen = false"
+          @click="emit('toggle-mobile-menu')"
           class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
         >
           <span class="sr-only">Fechar menu</span>
@@ -277,17 +289,17 @@
       </div>
 
       <!-- Conteúdo do menu mobile (igual ao desktop) -->
-      <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
+      <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto text-white hide-scrollbar">
         <div class="p-4 border-b border-gray-700">
           <h1 class="text-xl font-bold text-white">FZone</h1>
           <p class="text-sm text-gray-400">{{ authStore.userName }}</p>
         </div>
 
-        <nav class="mt-5 px-2 space-y-1">
+        <nav class="mt-5 px-2 space-y-1 mobile-menu-nav">
           <!-- Principais -->
           <div class="mb-2">
             <p
-              class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider"
+              class="px-3 text-xs font-semibold text-gray-300 uppercase tracking-wider"
             >
               Principal
             </p>
@@ -296,7 +308,7 @@
             <div
               @click="navigateTo('/')"
               :class="[
-                'p-3 rounded-md cursor-pointer flex items-center',
+                'p-3 rounded-md cursor-pointer flex items-center text-white',
                 route.path === '/'
                   ? 'bg-primary-600'
                   : 'hover:bg-gray-700',
@@ -310,7 +322,7 @@
             <div
               @click="navigateTo('/tasks')"
               :class="[
-                'p-3 rounded-md cursor-pointer flex items-center',
+                'p-3 rounded-md cursor-pointer flex items-center text-white',
                 isActive('/tasks') ? 'bg-primary-600' : 'hover:bg-gray-700',
               ]"
             >
@@ -322,7 +334,7 @@
             <div
               @click="navigateTo('/notifications')"
               :class="[
-                'p-3 rounded-md cursor-pointer flex items-center',
+                'p-3 rounded-md cursor-pointer flex items-center text-white',
                 isActive('/notifications')
                   ? 'bg-primary-600'
                   : 'hover:bg-gray-700',
@@ -336,7 +348,7 @@
           <!-- Módulos -->
           <div class="mb-2">
             <p
-              class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider"
+              class="px-3 text-xs font-semibold text-gray-300 uppercase tracking-wider"
             >
               Módulos
             </p>
@@ -384,12 +396,24 @@
             <div
               @click="navigateTo('/events')"
               :class="[
-                'p-3 rounded-md cursor-pointer flex items-center',
+                'p-3 rounded-md cursor-pointer flex items-center text-white',
                 isActive('/events') ? 'bg-primary-600' : 'hover:bg-gray-700',
               ]"
             >
               <span class="material-icons mr-3">event</span>
               <span>Eventos</span>
+            </div>
+            
+            <!-- Calendário -->
+            <div
+              @click="navigateTo('/calendar')"
+              :class="[
+                'p-3 rounded-md cursor-pointer flex items-center text-white',
+                isActive('/calendar') ? 'bg-primary-600' : 'hover:bg-gray-700',
+              ]"
+            >
+              <span class="material-icons mr-3">calendar_month</span>
+              <span>Calendário</span>
             </div>
 
             <!-- Contas -->
@@ -409,7 +433,7 @@
           <!-- Configurações -->
           <div class="mb-2">
             <p
-              class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider"
+              class="px-3 text-xs font-semibold text-gray-300 uppercase tracking-wider"
             >
               Configurações
             </p>

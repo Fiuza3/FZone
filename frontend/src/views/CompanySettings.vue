@@ -45,12 +45,7 @@ const company = ref({
     whatsapp: '',
     linkedin: ''
   },
-  notifications: {
-    emailAlerts: true,
-    lowStockAlerts: true,
-    eventReminders: true,
-    financialReports: true
-  }
+
 });
 
 // Verifica se usuário pode editar
@@ -437,55 +432,7 @@ const updatePhone = (event) => {
           </div>
         </div>
 
-        <!-- Notificações -->
-        <div class="card">
-          <div class="card-header">
-            <h2 class="text-lg font-semibold">Preferências de Notificação</h2>
-          </div>
-          <div class="p-6 space-y-4">
-            <div class="space-y-3">
-              <label class="flex items-center">
-                <input 
-                  v-model="company.notifications.emailAlerts"
-                  type="checkbox"
-                  :disabled="!canEdit"
-                  class="h-4 w-4 text-primary-600"
-                />
-                <span class="ml-2 text-sm">Receber alertas por email</span>
-              </label>
-              
-              <label class="flex items-center">
-                <input 
-                  v-model="company.notifications.lowStockAlerts"
-                  type="checkbox"
-                  :disabled="!canEdit"
-                  class="h-4 w-4 text-primary-600"
-                />
-                <span class="ml-2 text-sm">Alertas de estoque baixo</span>
-              </label>
-              
-              <label class="flex items-center">
-                <input 
-                  v-model="company.notifications.eventReminders"
-                  type="checkbox"
-                  :disabled="!canEdit"
-                  class="h-4 w-4 text-primary-600"
-                />
-                <span class="ml-2 text-sm">Lembretes de eventos</span>
-              </label>
-              
-              <label class="flex items-center">
-                <input 
-                  v-model="company.notifications.financialReports"
-                  type="checkbox"
-                  :disabled="!canEdit"
-                  class="h-4 w-4 text-primary-600"
-                />
-                <span class="ml-2 text-sm">Relatórios financeiros automáticos</span>
-              </label>
-            </div>
-          </div>
-        </div>
+
 
         <!-- Botões -->
         <div v-if="canEdit" class="flex justify-end">

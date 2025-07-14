@@ -25,6 +25,7 @@ const AccountsList = () => import('../views/accounts/AccountsList.vue');
 const AcceptInvite = () => import('../views/AcceptInvite.vue');
 const EventList = () => import('../views/events/EventList.vue');
 const CompanySettings = () => import('../views/CompanySettings.vue');
+const CalendarView = () => import('../views/calendar/CalendarView.vue');
 const EventForm = () => import('../views/events/EventForm.vue');
 
 // Função para verificar autenticação
@@ -143,6 +144,12 @@ const routes = [
     path: '/company-settings',
     name: 'CompanySettings',
     component: CompanySettings,
+    beforeEnter: requireAuth
+  },
+  {
+    path: '/calendar',
+    name: 'Calendar',
+    component: CalendarView,
     beforeEnter: requireAuth
   },
   {
