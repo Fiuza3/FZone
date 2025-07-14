@@ -1,1 +1,4 @@
-backend
+backend/
+README.md
+.git/
+.gitignore

@@ -11,6 +11,11 @@ export default defineConfig({
         drop_console: false,
         drop_debugger: true
       }
+    },
+    rollupOptions: {
+      // Desabilita o uso de dependências nativas do Rollup
+      context: 'globalThis',
+      external: [/node:*/]
     }
   }
 })
