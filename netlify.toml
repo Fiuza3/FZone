@@ -1,7 +1,8 @@
 [build]
   base = "frontend"
   publish = "dist"
-  command = "npm install --no-optional && ROLLUP_NATIVE=false npm run build"
+  command = "npm install && npm run build"
+  environment = { NODE_VERSION = "18" }
 
 [[redirects]]
   from = "/*"
