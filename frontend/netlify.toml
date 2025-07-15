@@ -1,7 +1,6 @@
 [build]
-  base = "frontend"
   publish = "dist"
-  command = "npm ci && npm run build"
+  command = "bash ./build-netlify.sh"
 
 [build.environment]
   NODE_VERSION = "16"
