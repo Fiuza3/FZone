@@ -1,6 +1,6 @@
 # 🍫 FZone - Sistema de Gestão para Buffets
 
-> *"Transformando eventos em experiências inesquecíveis com gestão profissional"*
+> _"Transformando eventos em experiências inesquecíveis com gestão profissional"_
 
 Bem-vindo ao **FZone**, o sistema completo de gestão desenvolvido especialmente para buffets e empresas de eventos. Gerencie seu negócio de forma profissional e eficiente!
 
@@ -20,6 +20,7 @@ Tudo isso com uma interface moderna, intuitiva e responsiva!
 ## 🛠️ Tecnologias Utilizadas
 
 ### Frontend
+
 - **Vue 3** - Framework JavaScript reativo e moderno
 - **Pinia** - Gerenciamento de estado
 - **Vue Router** - Roteamento SPA
@@ -27,6 +28,7 @@ Tudo isso com uma interface moderna, intuitiva e responsiva!
 - **Material Icons** - Ícones do Google
 
 ### Backend
+
 - **Node.js** - Runtime JavaScript
 - **Express.js** - Framework web minimalista
 - **MongoDB** - Banco de dados NoSQL
@@ -92,6 +94,7 @@ O frontend estará disponível em `http://localhost:5173`
 ## 👤 Primeiro Acesso
 
 ### Usuário Padrão
+
 - **Email**: admin@example.com
 - **Senha**: admin123
 - **Empresa**: Buffet Chocolate com Menta
@@ -99,6 +102,7 @@ O frontend estará disponível em `http://localhost:5173`
 ⚠️ **Importante**: Altere a senha padrão após o primeiro login!
 
 ### Criando Novos Usuários
+
 1. Acesse o módulo **"Contas"** (apenas admin/owner)
 2. Clique em **"Convidar Funcionário"**
 3. Preencha email, cargo e departamento
@@ -108,6 +112,7 @@ O frontend estará disponível em `http://localhost:5173`
 ## 📋 Funcionalidades Principais
 
 ### 🎉 Gestão de Eventos
+
 - Criação e edição de eventos
 - Controle de status (Planejado → Confirmado → Em Andamento → Concluído)
 - Seleção de produtos do estoque
@@ -117,28 +122,33 @@ O frontend estará disponível em `http://localhost:5173`
 - Desconto automático do estoque quando confirmado
 
 ### 📋 Tarefas
+
 - Criação e atribuição de tarefas
 - Controle de status e prioridades
 - Notificações automáticas
 
 ### 📦 Estoque
+
 - Cadastro de produtos e ingredientes
 - Controle de quantidade e estoque mínimo
 - Alertas de baixo estoque
 - Relatórios de movimentação
 
 ### 💰 Financeiro
+
 - Controle de receitas e despesas
 - Transações automáticas dos eventos
 - Relatórios financeiros
 - Cálculo de balanço
 
 ### 👥 Recursos Humanos
+
 - Cadastro de funcionários
 - Controle de departamentos
 - Relatórios de folha de pagamento
 
 ### 🔐 Sistema de Permissões
+
 - **Owner/Admin**: Acesso total
 - **Manager**: Pode criar/editar eventos
 - **Employee**: Acesso limitado por departamento
@@ -175,14 +185,15 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 Se encontrar algum problema ou tiver dúvidas:
 
 1. Verifique a [documentação](docs/)
-2. Procure em [Issues](https://github.com/seu-usuario/fzone-erp/issues)
+2. Procure em [Issues](https://github.com/Fiuza3/FZone/issues)
 3. Crie uma nova issue se necessário
 
 ## 📝 Notas Finais
 
-O FZone foi desenvolvido especificamente para buffets e empresas de eventos, com foco na gestão completa do negócio. 
+O FZone foi desenvolvido especificamente para buffets e empresas de eventos, com foco na gestão completa do negócio.
 
 **Principais diferenciais:**
+
 - ✅ Gestão completa de eventos com cálculo de lucro
 - ✅ Controle automático de estoque por evento
 - ✅ Sistema multi-empresa com isolamento de dados
