@@ -51,6 +51,12 @@ if (!process.env.JWT_SECRET) {
 const debugUri = process.env.MONGODB_URI.replace(/\/\/[^:]+:[^@]+@/, '//[USUARIO]:[SENHA]@');
 console.log('🔍 String de conexão MongoDB:', debugUri);
 
+// Verifica se a string de conexão tem o formato correto
+if (process.env.MONGODB_URI.startsWith('MONGODB_URI=')) {
+  console.log('⚠️ Formato incorreto detectado, corrigindo string de conexão');
+  process.env.MONGODB_URI = process.env.MONGODB_URI.replace('MONGODB_URI=', '');
+}
+
 // Inicializa Express
 const app = express();
 const PORT = process.env.PORT || 3000;
