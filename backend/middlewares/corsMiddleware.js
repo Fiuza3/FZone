@@ -5,15 +5,20 @@ const corsMiddleware = (req, res, next) => {
   // Origens permitidas
   const allowedOrigins = [
     'https://f-zone-frontend-5fhm0l4jw-marcus-fiuzas-projects.vercel.app',
+    'https://f-zone-frontend-riojxlhhj-marcus-fiuzas-projects.vercel.app',
     'https://f-zone.vercel.app',
-    'http://localhost:5173'
+    'http://localhost:5173',
+    '*'
   ];
   
-  // Verifica se a origem da requisição está na lista de origens permitidas
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
+  // Permite todas as origens (para desenvolvimento)
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  
+  // Verificação de origens específicas (comentado por enquanto)
+  // const origin = req.headers.origin;
+  // if (allowedOrigins.includes(origin)) {
+  //   res.setHeader('Access-Control-Allow-Origin', origin);
+  // }
   
   // Configura outros cabeçalhos CORS
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');

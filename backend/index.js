@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const connectDB = require('./db');
 const errorHandler = require('./middlewares/errorHandler');
 const corsMiddleware = require('./middlewares/corsMiddleware');
+const corsApp = require('./cors-fix');
 
 // Importa modelos para registrá-los
 require('./models/User');
@@ -62,17 +63,23 @@ if (process.env.MONGODB_URI.startsWith('MONGODB_URI=')) {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Servir arquivos estáticos da pasta public
+app.use(express.static('public'));
+
 // Conecta ao MongoDB
 connectDB();
 
 // Middlewares
 app.use(cors({
-  origin: ['https://f-zone-frontend-5fhm0l4jw-marcus-fiuzas-projects.vercel.app', 'https://f-zone.vercel.app', 'http://localhost:5173'],
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 app.use(corsMiddleware); // Middleware CORS personalizado para garantir que os cabeçalhos sejam aplicados
+app.use(corsApp); // Aplicar correção CORS adicional
 app.use(express.json());
 
 // Log de requisições
