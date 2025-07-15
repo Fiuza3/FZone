@@ -1,0 +1,12 @@
+Configuração Manual para o Netlify:
+
+1. Site settings > Build & deploy > Continuous Deployment:
+
+   - Base directory: frontend
+   - Build command: npm ci && npm run build
+   - Publish directory: dist
+
+2. Site settings > Build & deploy > Environment:
+
+   - VITE_API_URL: https://fzone-api.onrender.com/api
+   - NODE_VERSION: 16
