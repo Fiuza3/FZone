@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import api from '../services/api';
+import { login as authLogin, register as authRegister } from '../services/auth';
 
 export const useAuthStore = defineStore('auth', {
   state: () => {
@@ -40,14 +41,16 @@ export const useAuthStore = defineStore('auth', {
       this.error = null;
       
       try {
-        const response = await api.post('/auth/login', { email, password });
+        // Usando o serviço de autenticação com tratamento CORS
+        console.log('🔑 Tentando login com email:', email);
+        const data = await authLogin(email, password);
         
-        if (response.data.success) {
-          this.setAuth(response.data.user, response.data.token);
+        if (data.success) {
+          this.setAuth(data.user, data.token);
           return true;
         }
         
-        this.error = response.data.error || 'Credenciais inválidas';
+        this.error = data.error || 'Credenciais inválidas';
         return false;
       } catch (error) {
         console.error('❌ Erro no login:', error);
