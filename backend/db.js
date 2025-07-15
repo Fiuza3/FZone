@@ -7,13 +7,9 @@ const connectDB = async () => {
     
     // String de conexão segura via variável de ambiente ou fallback para string direta
     const MONGODB_URI = process.env.MONGODB_URI || 
-      'mongodb+srv://devfiuza:Demerval739$@fzone.447xln8.mongodb.net/?retryWrites=true&w=majority&appName=FZone';
+      'mongodb+srv://devfiuza:Demerval739%24@fzone.447xln8.mongodb.net/?retryWrites=true&w=majority&appName=FZone';
     
     console.log('🔍 Verificando string de conexão:', MONGODB_URI ? 'String encontrada' : 'String vazia');
-    
-    if (!MONGODB_URI || !MONGODB_URI.startsWith('mongodb')) {
-      throw new Error('String de conexão MongoDB inválida ou não encontrada');
-    }
     
     const conn = await mongoose.connect(MONGODB_URI, {
       // As opções abaixo não são mais necessárias no Mongoose 6+

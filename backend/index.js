@@ -38,8 +38,18 @@ console.log('JWT_SECRET existe:', !!process.env.JWT_SECRET);
 // Se não encontrar MONGODB_URI, usar valor padrão
 if (!process.env.MONGODB_URI) {
   console.log('⚠️ MONGODB_URI não encontrada, usando valor padrão');
-  process.env.MONGODB_URI = 'mongodb+srv://devfiuza:Demerval739$@fzone.447xln8.mongodb.net/?retryWrites=true&w=majority&appName=FZone';
+  process.env.MONGODB_URI = 'mongodb+srv://devfiuza:Demerval739%24@fzone.447xln8.mongodb.net/?retryWrites=true&w=majority&appName=FZone';
 }
+
+// Verifica se JWT_SECRET existe, senão define um valor padrão
+if (!process.env.JWT_SECRET) {
+  console.log('⚠️ JWT_SECRET não encontrada, usando valor padrão');
+  process.env.JWT_SECRET = 'fzone_jwt_secret_key_2024';
+}
+
+// Mostra a string de conexão para debug (ocultando a senha)
+const debugUri = process.env.MONGODB_URI.replace(/\/\/[^:]+:[^@]+@/, '//[USUARIO]:[SENHA]@');
+console.log('🔍 String de conexão MongoDB:', debugUri);
 
 // Inicializa Express
 const app = express();

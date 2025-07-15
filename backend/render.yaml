@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: fzone-api
+    env: node
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        value: mongodb+srv://devfiuza:Demerval739%24@fzone.447xln8.mongodb.net/?retryWrites=true&w=majority&appName=FZone
+      - key: JWT_SECRET
+        value: fzone_jwt_secret_key_2024
+      - key: PORT
+        value: 10000
