@@ -29,6 +29,18 @@ const calendarRoutes = require('./routes/calendarRoutes');
 // Carrega variáveis de ambiente
 dotenv.config();
 
+// Verifica variáveis de ambiente críticas
+console.log('🔍 Verificando variáveis de ambiente:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('MONGODB_URI existe:', !!process.env.MONGODB_URI);
+console.log('JWT_SECRET existe:', !!process.env.JWT_SECRET);
+
+// Se não encontrar MONGODB_URI, usar valor padrão
+if (!process.env.MONGODB_URI) {
+  console.log('⚠️ MONGODB_URI não encontrada, usando valor padrão');
+  process.env.MONGODB_URI = 'mongodb+srv://devfiuza:Demerval739$@fzone.447xln8.mongodb.net/?retryWrites=true&w=majority&appName=FZone';
+}
+
 // Inicializa Express
 const app = express();
 const PORT = process.env.PORT || 3000;
