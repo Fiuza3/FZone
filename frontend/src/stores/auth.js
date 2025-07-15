@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import api from '../services/api';
-import { login as authLogin, register as authRegister } from '../services/auth';
+// Importando serviço mockado para desenvolvimento
+import { login as authLogin, register as authRegister } from '../services/mockAuth';
 
 export const useAuthStore = defineStore('auth', {
   state: () => {
