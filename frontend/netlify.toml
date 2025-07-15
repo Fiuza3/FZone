@@ -5,6 +5,7 @@
 [build.environment]
   NODE_VERSION = "16"
   VITE_API_URL = "https://fzone-api.onrender.com/api"
+  ROLLUP_NATIVE = "false"
 
 [[redirects]]
   from = "/*"

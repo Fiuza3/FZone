@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --emptyOutDir",
+    "build": "node build-no-rollup.js",
     "preview": "vite preview"
   },
   "dependencies": {
