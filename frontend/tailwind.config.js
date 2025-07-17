@@ -4,7 +4,7 @@ export default {
     "./index.html",
     "./src/**/*.{vue,js,ts,jsx,tsx}",
   ],
-  darkMode: 'class', // Habilita modo escuro baseado em classe
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -35,18 +35,6 @@ export default {
           950: '#2e1065',
         },
       },
-      spacing: {
-        '72': '18rem',
-        '84': '21rem',
-        '96': '24rem',
-      },
-    },
-  },
-  variants: {
-    extend: {
-      backgroundColor: ['dark'],
-      textColor: ['dark'],
-      borderColor: ['dark'],
     },
   },
   plugins: [],
