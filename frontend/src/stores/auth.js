@@ -1,7 +1,4 @@
 import { defineStore } from 'pinia';
-import api from '../services/api';
-// Importando serviço mockado para desenvolvimento
-import { login as authLogin, register as authRegister } from '../services/mockAuth';
 
 export const useAuthStore = defineStore('auth', {
   state: () => {
@@ -42,20 +39,40 @@ export const useAuthStore = defineStore('auth', {
       this.error = null;
       
       try {
-        // Usando o serviço de autenticação com tratamento CORS
         console.log('🔑 Tentando login com email:', email);
-        const data = await authLogin(email, password);
         
-        if (data.success) {
-          this.setAuth(data.user, data.token);
+        // Login mockado direto
+        if (email === 'admin@example.com' && password === 'admin123') {
+          const user = {
+            id: '1',
+            name: 'Administrador',
+            email: 'admin@example.com',
+            role: 'admin',
+            department: 'admin',
+            permissions: {
+              events: true,
+              tasks: true,
+              stock: true,
+              finance: true,
+              hr: true,
+              accounts: true
+            }
+          };
+          
+          const token = 'mock-token-' + Math.random().toString(36).substring(2);
+          
+          // Simula delay de rede
+          await new Promise(resolve => setTimeout(resolve, 800));
+          
+          this.setAuth(user, token);
           return true;
         }
         
-        this.error = data.error || 'Credenciais inválidas';
+        this.error = 'Credenciais inválidas';
         return false;
       } catch (error) {
         console.error('❌ Erro no login:', error);
-        this.error = error.response?.data?.error || 'Erro ao fazer login';
+        this.error = 'Erro ao fazer login';
         return false;
       } finally {
         this.loading = false;

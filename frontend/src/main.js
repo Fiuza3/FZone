@@ -2,20 +2,24 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
-import './style.css'
 import './assets/custom.css'
+import './style.css'
 
 // Cria a instância do app Vue
 const app = createApp(App)
 
-// Configura Pinia para gerenciamento de estado
-const pinia = createPinia()
-app.use(pinia)
+// Adiciona o Pinia para gerenciamento de estado
+app.use(createPinia())
 
-// Configura Vue Router
+// Adiciona o Vue Router
 app.use(router)
 
 // Monta o app no elemento #app
 app.mount('#app')
 
-console.log('🚀 ERP inicializado com sucesso!');
+// Mensagem de inicialização
+console.log('🚀 ERP inicializado com sucesso!')
+
+// Aviso de modo de desenvolvimento
+console.log('⚠️ MODO DE DESENVOLVIMENTO: Usando dados mockados')
+console.log('📝 Login: admin@example.com / Senha: admin123')
