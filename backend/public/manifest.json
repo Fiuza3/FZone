@@ -1,0 +1,16 @@
+{
+  "name": "FZone - Sistema de Gestão para Buffets",
+  "short_name": "FZone",
+  "description": "Sistema completo de gestão para buffets e empresas de eventos",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    }
+  ]
+}
