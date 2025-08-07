@@ -137,245 +137,284 @@ onMounted(loadTransactions);
 </script>
 
 <template>
-  <div>
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="page-title">Gerenciamento Financeiro</h1>
-      <div class="flex space-x-2">
-        <button @click="goToProjection" class="btn btn-outline flex items-center">
-          <span class="material-icons mr-1">trending_up</span>
-          Projeção
-        </button>
-        <button @click="goToReport" class="btn btn-outline flex items-center">
-          <span class="material-icons mr-1">assessment</span>
-          Relatório
-        </button>
-        <button @click="goToNewTransaction" class="btn btn-primary flex items-center">
-          <span class="material-icons mr-1">add</span>
-          Nova Transação
-        </button>
-      </div>
-    </div>
+  <v-container fluid class="pa-6">
+    <!-- Header -->
+    <v-row class="mb-6">
+      <v-col>
+        <div class="d-flex justify-space-between align-center mb-4">
+          <div>
+            <h1 class="text-h4 font-weight-bold mb-2">Gerenciamento Financeiro</h1>
+          </div>
+          <div class="d-flex ga-2">
+            <v-btn
+              @click="goToProjection"
+              variant="outlined"
+              prepend-icon="mdi-trending-up"
+              size="large"
+            >
+              Projeção
+            </v-btn>
+            <v-btn
+              @click="goToReport"
+              variant="outlined"
+              prepend-icon="mdi-chart-line"
+              size="large"
+            >
+              Relatório
+            </v-btn>
+            <v-btn
+              @click="goToNewTransaction"
+              color="primary"
+              prepend-icon="mdi-plus"
+              size="large"
+            >
+              Nova Transação
+            </v-btn>
+          </div>
+        </div>
+      </v-col>
+    </v-row>
     
     <!-- Filtros -->
-    <div class="card mb-6">
-      <h2 class="text-lg font-semibold mb-4">Filtros</h2>
+    <v-card class="mb-6" elevation="4">
+      <v-card-title class="d-flex align-center bg-grey-lighten-5">
+        <v-icon class="me-2" color="primary">mdi-filter</v-icon>
+        Filtros
+      </v-card-title>
       
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        <!-- Filtro de tipo -->
-        <div>
-          <label for="type-filter" class="form-label">Tipo</label>
-          <select
-            id="type-filter"
-            v-model="filters.type"
-            class="form-input"
-          >
-            <option v-for="option in typeOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
-          </select>
-        </div>
+      <v-card-text>
+        <v-row class="mb-4">
+          <v-col cols="12" md="4">
+            <v-select
+              v-model="filters.type"
+              :items="typeOptions"
+              item-title="label"
+              item-value="value"
+              label="Tipo"
+              variant="outlined"
+              density="compact"
+            ></v-select>
+          </v-col>
+          
+          <v-col cols="12" md="4">
+            <v-select
+              v-model="filters.category"
+              :items="categoryOptions"
+              item-title="label"
+              item-value="value"
+              label="Categoria"
+              variant="outlined"
+              density="compact"
+            ></v-select>
+          </v-col>
+          
+          <v-col cols="12" md="4">
+            <v-select
+              v-model="filters.status"
+              :items="statusOptions"
+              item-title="label"
+              item-value="value"
+              label="Status"
+              variant="outlined"
+              density="compact"
+            ></v-select>
+          </v-col>
+        </v-row>
         
-        <!-- Filtro de categoria -->
-        <div>
-          <label for="category-filter" class="form-label">Categoria</label>
-          <select
-            id="category-filter"
-            v-model="filters.category"
-            class="form-input"
-          >
-            <option v-for="option in categoryOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
-          </select>
-        </div>
-        
-        <!-- Filtro de status -->
-        <div>
-          <label for="status-filter" class="form-label">Status</label>
-          <select
-            id="status-filter"
-            v-model="filters.status"
-            class="form-input"
-          >
-            <option v-for="option in statusOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
-          </select>
-        </div>
-      </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <!-- Data inicial -->
-        <div>
-          <label for="start-date" class="form-label">Data inicial</label>
-          <input
-            id="start-date"
-            v-model="filters.startDate"
-            type="date"
-            class="form-input"
-          />
-        </div>
-        
-        <!-- Data final -->
-        <div>
-          <label for="end-date" class="form-label">Data final</label>
-          <input
-            id="end-date"
-            v-model="filters.endDate"
-            type="date"
-            class="form-input"
-          />
-        </div>
-        
-        <!-- Botões de ação -->
-        <div class="flex items-end space-x-2">
-          <button @click="applyFilters" class="btn btn-primary">
-            <span class="material-icons mr-1">search</span>
-            Filtrar
-          </button>
-          <button @click="clearFilters" class="btn btn-outline">
-            <span class="material-icons mr-1">clear</span>
-            Limpar
-          </button>
-        </div>
-      </div>
-    </div>
+        <v-row>
+          <v-col cols="12" md="4">
+            <v-text-field
+              v-model="filters.startDate"
+              type="date"
+              label="Data inicial"
+              variant="outlined"
+              density="compact"
+            ></v-text-field>
+          </v-col>
+          
+          <v-col cols="12" md="4">
+            <v-text-field
+              v-model="filters.endDate"
+              type="date"
+              label="Data final"
+              variant="outlined"
+              density="compact"
+            ></v-text-field>
+          </v-col>
+          
+          <v-col cols="12" md="4" class="d-flex align-end ga-2">
+            <v-btn
+              @click="applyFilters"
+              color="primary"
+              prepend-icon="mdi-magnify"
+              variant="outlined"
+            >
+              Filtrar
+            </v-btn>
+            <v-btn
+              @click="clearFilters"
+              variant="outlined"
+              prepend-icon="mdi-filter-remove"
+            >
+              Limpar
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
     
     <!-- Lista de transações -->
-    <div class="card">
-      <!-- Carregando -->
-      <div v-if="isLoading" class="flex justify-center py-8">
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600"></div>
-      </div>
+    <v-card elevation="4">
+      <!-- Loading -->
+      <v-row v-if="isLoading" justify="center">
+        <v-col cols="auto" class="text-center">
+          <v-progress-circular
+            indeterminate
+            color="primary"
+            size="64"
+          ></v-progress-circular>
+          <p class="mt-4 text-h6">Carregando transações...</p>
+        </v-col>
+      </v-row>
       
       <!-- Sem transações -->
-      <div v-else-if="financeStore.transactions.length === 0" class="text-center py-8">
-        <span class="material-icons text-4xl text-gray-400">payments</span>
-        <p class="text-gray-500 mt-2">Nenhuma transação encontrada</p>
-        <button @click="goToNewTransaction" class="btn btn-primary mt-4">
-          Registrar Nova Transação
-        </button>
-      </div>
+      <v-card-text v-else-if="financeStore.transactions.length === 0">
+        <v-empty-state
+          icon="mdi-credit-card-outline"
+          title="Nenhuma transação encontrada"
+          text="Comece registrando sua primeira transação financeira"
+        >
+          <template v-slot:actions>
+            <v-btn @click="goToNewTransaction" color="primary">
+              Registrar Nova Transação
+            </v-btn>
+          </template>
+        </v-empty-state>
+      </v-card-text>
       
       <!-- Tabela de transações -->
-      <div v-else class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Descrição
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Tipo
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Categoria
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Valor
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Data
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Ações
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="transaction in financeStore.transactions" :key="transaction._id">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="font-medium text-gray-900">{{ transaction.description }}</div>
-                <div class="text-sm text-gray-500">{{ transaction.reference || '-' }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span 
-                  :class="[
-                    'px-2 py-1 text-xs rounded-full',
-                    transaction.type === 'receita' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  ]"
-                >
-                  {{ transaction.type === 'receita' ? 'Receita' : 'Despesa' }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
-                  {{ transaction.category }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div 
-                  :class="[
-                    'font-medium',
-                    transaction.type === 'receita' ? 'text-green-600' : 'text-red-600'
-                  ]"
-                >
-                  {{ formatCurrency(transaction.amount) }}
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">{{ formatDate(transaction.date) }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span 
-                  :class="[
-                    'px-2 py-1 text-xs rounded-full',
-                    transaction.status === 'pendente' ? 'bg-yellow-100 text-yellow-800' :
-                    transaction.status === 'pago' ? 'bg-green-100 text-green-800' :
-                    'bg-red-100 text-red-800'
-                  ]"
-                >
-                  {{ transaction.status === 'pendente' ? 'Pendente' :
-                     transaction.status === 'pago' ? 'Pago' : 'Cancelado' }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <div class="flex justify-end space-x-2">
-                  <!-- Botão de editar -->
-                  <button 
-                    @click="editTransaction(transaction._id)" 
-                    class="text-blue-600 hover:text-blue-900"
-                    title="Editar transação"
-                  >
-                    <span class="material-icons">edit</span>
-                  </button>
-                  
-                  <!-- Botão de excluir -->
-                  <button 
-                    @click="confirmDelete(transaction)" 
-                    class="text-red-600 hover:text-red-900"
-                    title="Excluir transação"
-                  >
-                    <span class="material-icons">delete</span>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <v-data-table
+        v-else
+        :items="financeStore.transactions"
+        :headers="[
+          { title: 'Descrição', key: 'description' },
+          { title: 'Tipo', key: 'type' },
+          { title: 'Categoria', key: 'category' },
+          { title: 'Valor', key: 'amount' },
+          { title: 'Data', key: 'date' },
+          { title: 'Status', key: 'status' },
+          { title: 'Ações', key: 'actions', sortable: false }
+        ]"
+        class="elevation-0"
+        :items-per-page="10"
+      >
+        <template v-slot:item.description="{ item }">
+          <div>
+            <div class="font-weight-medium">{{ item.description }}</div>
+            <div class="text-caption text-grey-darken-1">{{ item.reference || '-' }}</div>
+          </div>
+        </template>
+
+        <template v-slot:item.type="{ item }">
+          <v-chip
+            :color="item.type === 'receita' ? 'success' : 'error'"
+            size="small"
+            variant="tonal"
+          >
+            {{ item.type === 'receita' ? 'Receita' : 'Despesa' }}
+          </v-chip>
+        </template>
+
+        <template v-slot:item.category="{ item }">
+          <v-chip size="small" variant="tonal">
+            {{ item.category }}
+          </v-chip>
+        </template>
+
+        <template v-slot:item.amount="{ item }">
+          <span
+            :class="[
+              'font-weight-bold',
+              item.type === 'receita' ? 'text-success' : 'text-error'
+            ]"
+          >
+            {{ formatCurrency(item.amount) }}
+          </span>
+        </template>
+
+        <template v-slot:item.date="{ item }">
+          {{ formatDate(item.date) }}
+        </template>
+
+        <template v-slot:item.status="{ item }">
+          <v-chip
+            :color="
+              item.status === 'pendente' ? 'warning' :
+              item.status === 'pago' ? 'success' : 'error'
+            "
+            size="small"
+            variant="tonal"
+          >
+            {{ item.status === 'pendente' ? 'Pendente' :
+               item.status === 'pago' ? 'Pago' : 'Cancelado' }}
+          </v-chip>
+        </template>
+
+        <template v-slot:item.actions="{ item }">
+          <div class="d-flex ga-1">
+            <v-tooltip text="Editar transação">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  @click="editTransaction(item._id)"
+                  icon="mdi-pencil"
+                  color="primary"
+                  size="small"
+                  variant="text"
+                  v-bind="props"
+                ></v-btn>
+              </template>
+            </v-tooltip>
+            
+            <v-tooltip text="Excluir transação">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  @click="confirmDelete(item)"
+                  icon="mdi-delete"
+                  color="error"
+                  size="small"
+                  variant="text"
+                  v-bind="props"
+                ></v-btn>
+              </template>
+            </v-tooltip>
+          </div>
+        </template>
+      </v-data-table>
+    </v-card>
     
     <!-- Modal de confirmação de exclusão -->
-    <div v-if="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 max-w-md w-full">
-        <h3 class="text-lg font-semibold mb-4">Confirmar exclusão</h3>
-        <p class="mb-6">
+    <v-dialog v-model="showDeleteModal" max-width="400">
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          <v-icon class="me-2" color="error">mdi-alert-circle</v-icon>
+          Confirmar exclusão
+        </v-card-title>
+        
+        <v-card-text>
           Tem certeza que deseja excluir a transação "{{ transactionToDelete?.description }}"?
           Esta ação não pode ser desfeita.
-        </p>
-        <div class="flex justify-end space-x-2">
-          <button @click="showDeleteModal = false" class="btn btn-outline">
+        </v-card-text>
+        
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn @click="showDeleteModal = false" variant="outlined">
             Cancelar
-          </button>
-          <button @click="deleteTransaction" class="btn btn-danger">
+          </v-btn>
+          <v-btn @click="deleteTransaction" color="error">
             Excluir
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </v-container>
 </template>

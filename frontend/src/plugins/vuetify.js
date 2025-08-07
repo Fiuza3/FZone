@@ -11,19 +11,29 @@ const lightTheme = {
   colors: {
     background: '#ffffff',
     surface: '#f8f9fa',
-    'surface-variant': '#e3f2fd',
-    primary: '#81d4fa', // Azul bebê
-    'primary-darken-1': '#4fc3f7',
-    secondary: '#b3e5fc',
-    accent: '#81d4fa',
+    'surface-variant': '#51a8ffff',
+    primary: '#4db6e6', // Azul bebê mais escuro
+    'primary-darken-1': '#ee0000ff',
+    'primary-lighten-4': '#e1f5fe',
+    secondary: '#81c7d4',
+    accent: '#4db6e6',
     error: '#f44336',
-    info: '#2196f3',
-    success: '#4caf50',
-    warning: '#ff9800',
+    info: '#f44336',
+    'info-lighten-4': '#ffebee',
+    success: '#388e3c',
+    'success-lighten-4': '#f5e8e8ff',
+    warning: '#f57c00',
+    'warning-lighten-4': '#fff3e0',
     'on-background': '#000000',
     'on-surface': '#000000',
     'on-primary': '#000000',
     'on-secondary': '#000000',
+    'on-error': '#ffffff',
+    'on-info': '#ffffff',
+    'on-success': '#ffffff',
+    'on-warning': '#ffffff',
+    'tooltip': '#f44336',
+    'on-tooltip': '#ffffff',
   }
 }
 

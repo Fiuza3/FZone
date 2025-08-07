@@ -121,194 +121,236 @@ onMounted(loadEmployees);
 </script>
 
 <template>
-  <div>
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="page-title">Gerenciamento de Pessoas</h1>
-      <div class="flex space-x-2">
-        <button @click="goToPayrollReport" class="btn btn-outline flex items-center">
-          <span class="material-icons mr-1">assessment</span>
-          Folha de Pagamento
-        </button>
-        <button @click="goToNewEmployee" class="btn btn-primary flex items-center">
-          <span class="material-icons mr-1">add</span>
-          Novo Funcionário
-        </button>
-      </div>
-    </div>
+  <v-container fluid class="pa-6">
+    <!-- Header -->
+    <v-row class="mb-6">
+      <v-col>
+        <div class="d-flex justify-space-between align-center mb-4">
+          <div>
+            <h1 class="text-h4 font-weight-bold mb-2">Gerenciamento de Pessoas</h1>
+          </div>
+          <div class="d-flex ga-2">
+            <v-btn
+              @click="goToPayrollReport"
+              variant="outlined"
+              prepend-icon="mdi-chart-line"
+              size="large"
+            >
+              Folha de Pagamento
+            </v-btn>
+            <v-btn
+              @click="goToNewEmployee"
+              color="primary"
+              prepend-icon="mdi-account-plus"
+              size="large"
+            >
+              Novo Funcionário
+            </v-btn>
+          </div>
+        </div>
+      </v-col>
+    </v-row>
     
     <!-- Filtros -->
-    <div class="card mb-6">
-      <h2 class="text-lg font-semibold mb-4">Filtros</h2>
+    <v-card class="mb-6" elevation="4">
+      <v-card-title class="d-flex align-center bg-grey-lighten-5">
+        <v-icon class="me-2" color="primary">mdi-filter</v-icon>
+        Filtros
+      </v-card-title>
       
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <!-- Filtro de departamento -->
-        <div>
-          <label for="department-filter" class="form-label">Departamento</label>
-          <select
-            id="department-filter"
-            v-model="filters.department"
-            class="form-input"
-          >
-            <option v-for="option in departmentOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
-          </select>
-        </div>
-        
-        <!-- Filtro de status -->
-        <div>
-          <label for="status-filter" class="form-label">Status</label>
-          <select
-            id="status-filter"
-            v-model="filters.status"
-            class="form-input"
-          >
-            <option v-for="option in statusOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
-          </select>
-        </div>
-        
-        <!-- Botões de ação -->
-        <div class="flex items-end space-x-2">
-          <button @click="applyFilters" class="btn btn-primary">
-            <span class="material-icons mr-1">search</span>
-            Filtrar
-          </button>
-          <button @click="clearFilters" class="btn btn-outline">
-            <span class="material-icons mr-1">clear</span>
-            Limpar
-          </button>
-        </div>
-      </div>
-    </div>
+      <v-card-text>
+        <v-row>
+          <v-col cols="12" md="4">
+            <v-select
+              v-model="filters.department"
+              :items="departmentOptions"
+              item-title="label"
+              item-value="value"
+              label="Departamento"
+              variant="outlined"
+              density="compact"
+            ></v-select>
+          </v-col>
+          
+          <v-col cols="12" md="4">
+            <v-select
+              v-model="filters.status"
+              :items="statusOptions"
+              item-title="label"
+              item-value="value"
+              label="Status"
+              variant="outlined"
+              density="compact"
+            ></v-select>
+          </v-col>
+          
+          <v-col cols="12" md="4" class="d-flex align-end ga-2">
+            <v-btn
+              @click="applyFilters"
+              color="primary"
+              prepend-icon="mdi-magnify"
+              variant="outlined"
+            >
+              Filtrar
+            </v-btn>
+            <v-btn
+              @click="clearFilters"
+              variant="outlined"
+              prepend-icon="mdi-filter-remove"
+            >
+              Limpar
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
     
     <!-- Lista de funcionários -->
-    <div class="card">
-      <!-- Carregando -->
-      <div v-if="isLoading" class="flex justify-center py-8">
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600"></div>
-      </div>
+    <v-card elevation="4">
+      <!-- Loading -->
+      <v-row v-if="isLoading" justify="center">
+        <v-col cols="auto" class="text-center">
+          <v-progress-circular
+            indeterminate
+            color="primary"
+            size="64"
+          ></v-progress-circular>
+          <p class="mt-4 text-h6">Carregando funcionários...</p>
+        </v-col>
+      </v-row>
       
       <!-- Sem funcionários -->
-      <div v-else-if="hrStore.employees.length === 0" class="text-center py-8">
-        <span class="material-icons text-4xl text-gray-400">people</span>
-        <p class="text-gray-500 mt-2">Nenhum funcionário encontrado</p>
-        <button @click="goToNewEmployee" class="btn btn-primary mt-4">
-          Cadastrar Novo Funcionário
-        </button>
-      </div>
+      <v-card-text v-else-if="hrStore.employees.length === 0">
+        <v-empty-state
+          icon="mdi-account-group-outline"
+          title="Nenhum funcionário encontrado"
+          text="Comece cadastrando seu primeiro funcionário"
+        >
+          <template v-slot:actions>
+            <v-btn @click="goToNewEmployee" color="primary">
+              Cadastrar Novo Funcionário
+            </v-btn>
+          </template>
+        </v-empty-state>
+      </v-card-text>
       
       <!-- Tabela de funcionários -->
-      <div v-else class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Funcionário
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Cargo
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Departamento
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Salário
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Ações
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="employee in hrStore.employees" :key="employee._id">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                    <span class="text-gray-600 font-medium">{{ employee.name.charAt(0) }}</span>
-                  </div>
-                  <div class="ml-4">
-                    <div class="font-medium text-gray-900">{{ employee.name }}</div>
-                    <div class="text-sm text-gray-500">{{ employee.email }}</div>
-                  </div>
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">{{ employee.position }}</div>
-                <div class="text-xs text-gray-500">{{ employee.yearsOfService }} anos</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
-                  {{ employee.department }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">{{ formatCurrency(employee.salary) }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span 
-                  :class="[
-                    'px-2 py-1 text-xs rounded-full',
-                    employee.status === 'ativo' ? 'bg-green-100 text-green-800' :
-                    employee.status === 'inativo' ? 'bg-red-100 text-red-800' :
-                    employee.status === 'ferias' ? 'bg-blue-100 text-blue-800' :
-                    'bg-yellow-100 text-yellow-800'
-                  ]"
-                >
-                  {{ employee.status === 'ativo' ? 'Ativo' :
-                     employee.status === 'inativo' ? 'Inativo' :
-                     employee.status === 'ferias' ? 'Férias' : 'Licença' }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <div class="flex justify-end space-x-2">
-                  <!-- Botão de editar -->
-                  <button 
-                    @click="editEmployee(employee._id)" 
-                    class="text-blue-600 hover:text-blue-900"
-                    title="Editar funcionário"
-                  >
-                    <span class="material-icons">edit</span>
-                  </button>
-                  
-                  <!-- Botão de desativar (apenas para ativos) -->
-                  <button 
-                    v-if="employee.status === 'ativo'"
-                    @click="confirmDeactivate(employee)" 
-                    class="text-red-600 hover:text-red-900"
-                    title="Desativar funcionário"
-                  >
-                    <span class="material-icons">person_off</span>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <v-data-table
+        v-else
+        :items="hrStore.employees"
+        :headers="[
+          { title: 'Funcionário', key: 'name' },
+          { title: 'Cargo', key: 'position' },
+          { title: 'Departamento', key: 'department' },
+          { title: 'Salário', key: 'salary' },
+          { title: 'Status', key: 'status' },
+          { title: 'Ações', key: 'actions', sortable: false }
+        ]"
+        class="elevation-0"
+        :items-per-page="10"
+      >
+        <template v-slot:item.name="{ item }">
+          <div class="d-flex align-center py-2">
+            <v-avatar color="primary" class="me-3" size="40">
+              <span class="font-weight-bold">{{ item.name.charAt(0).toUpperCase() }}</span>
+            </v-avatar>
+            <div>
+              <div class="font-weight-medium">{{ item.name }}</div>
+              <div class="text-caption text-grey-darken-1">{{ item.email }}</div>
+            </div>
+          </div>
+        </template>
+
+        <template v-slot:item.position="{ item }">
+          <div>
+            <div class="font-weight-medium">{{ item.position }}</div>
+            <div class="text-caption text-grey-darken-1">{{ item.yearsOfService }} anos</div>
+          </div>
+        </template>
+
+        <template v-slot:item.department="{ item }">
+          <v-chip size="small" variant="tonal">
+            {{ item.department }}
+          </v-chip>
+        </template>
+
+        <template v-slot:item.salary="{ item }">
+          <span class="font-weight-bold text-success">
+            {{ formatCurrency(item.salary) }}
+          </span>
+        </template>
+
+        <template v-slot:item.status="{ item }">
+          <v-chip
+            :color="
+              item.status === 'ativo' ? 'success' :
+              item.status === 'inativo' ? 'error' :
+              item.status === 'ferias' ? 'info' : 'warning'
+            "
+            size="small"
+            variant="tonal"
+          >
+            {{ item.status === 'ativo' ? 'Ativo' :
+               item.status === 'inativo' ? 'Inativo' :
+               item.status === 'ferias' ? 'Férias' : 'Licença' }}
+          </v-chip>
+        </template>
+
+        <template v-slot:item.actions="{ item }">
+          <div class="d-flex ga-1">
+            <v-tooltip text="Editar funcionário">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  @click="editEmployee(item._id)"
+                  icon="mdi-pencil"
+                  color="primary"
+                  size="small"
+                  variant="text"
+                  v-bind="props"
+                ></v-btn>
+              </template>
+            </v-tooltip>
+            
+            <v-tooltip text="Desativar funcionário" v-if="item.status === 'ativo'">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  @click="confirmDeactivate(item)"
+                  icon="mdi-account-off"
+                  color="error"
+                  size="small"
+                  variant="text"
+                  v-bind="props"
+                ></v-btn>
+              </template>
+            </v-tooltip>
+          </div>
+        </template>
+      </v-data-table>
+    </v-card>
     
     <!-- Modal de confirmação de desativação -->
-    <div v-if="showDeactivateModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 max-w-md w-full">
-        <h3 class="text-lg font-semibold mb-4">Confirmar desativação</h3>
-        <p class="mb-6">
+    <v-dialog v-model="showDeactivateModal" max-width="400">
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          <v-icon class="me-2" color="error">mdi-alert-circle</v-icon>
+          Confirmar desativação
+        </v-card-title>
+        
+        <v-card-text>
           Tem certeza que deseja desativar o funcionário "{{ employeeToDeactivate?.name }}"?
           O funcionário não poderá mais acessar o sistema.
-        </p>
-        <div class="flex justify-end space-x-2">
-          <button @click="showDeactivateModal = false" class="btn btn-outline">
+        </v-card-text>
+        
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn @click="showDeactivateModal = false" variant="outlined">
             Cancelar
-          </button>
-          <button @click="deactivateEmployee" class="btn btn-danger">
+          </v-btn>
+          <v-btn @click="deactivateEmployee" color="error">
             Desativar
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </v-container>
 </template>

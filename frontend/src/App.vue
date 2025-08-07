@@ -4,6 +4,8 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from './stores/auth';
 import AppSidebar from './components/layout/AppSidebar.vue';
 import LoadingScreen from './components/layout/LoadingScreen.vue';
+import NotificationDropdown from './components/NotificationDropdown.vue';
+import NotificationSnackbar from './components/NotificationSnackbar.vue';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -91,7 +93,7 @@ const toggleDrawer = () => {
         
         <v-spacer></v-spacer>
         
-        <v-btn icon="mdi-bell" variant="text"></v-btn>
+        <NotificationDropdown />
         
         <v-menu>
           <template v-slot:activator="{ props }">
@@ -126,6 +128,9 @@ const toggleDrawer = () => {
           </router-view>
         </v-container>
       </v-main>
+      
+      <!-- Snackbar de notificações -->
+      <NotificationSnackbar />
     </template>
     
     <!-- Layout para usuários não autenticados -->

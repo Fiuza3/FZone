@@ -72,103 +72,197 @@ const deleteEvent = async (event) => {
 </script>
 
 <template>
-  <div>
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="page-title">Calendário de Eventos</h1>
-      <button 
-        v-if="canCreateEdit"
-        @click="router.push('/events/new')"
-        class="btn btn-primary"
-      >
-        <span class="material-icons mr-2">event</span>
-        Novo Evento
-      </button>
-    </div>
+  <v-container fluid class="pa-6">
+    <!-- Header -->
+    <v-row class="mb-6">
+      <v-col>
+        <div class="d-flex justify-space-between align-center mb-4">
+          <div>
+            <h1 class="text-h4 font-weight-bold mb-2">Calendário de Eventos</h1>
+          </div>
+          <v-btn
+            v-if="canCreateEdit"
+            @click="router.push('/events/new')"
+            color="primary"
+            prepend-icon="mdi-calendar-plus"
+            size="large"
+          >
+            Novo Evento
+          </v-btn>
+        </div>
+      </v-col>
+    </v-row>
 
     <!-- Filtros -->
-    <div class="card mb-6">
-      <div class="p-4">
-        <div class="flex items-center space-x-4">
-          <label class="text-sm font-medium text-gray-700">Filtrar por status:</label>
-          <select v-model="selectedStatus" class="form-input w-48">
-            <option value="todos">Todos</option>
-            <option value="planejado">Planejado</option>
-            <option value="confirmado">Confirmado</option>
-            <option value="em_andamento">Em Andamento</option>
-            <option value="concluido">Concluído</option>
-            <option value="cancelado">Cancelado</option>
-          </select>
-        </div>
-      </div>
-    </div>
+    <v-card class="mb-6" elevation="4">
+      <v-card-title class="d-flex align-center bg-grey-lighten-5">
+        <v-icon class="me-2" color="primary">mdi-filter</v-icon>
+        Filtros
+      </v-card-title>
+      
+      <v-card-text>
+        <v-row>
+          <v-col cols="12" md="4">
+            <v-select
+              v-model="selectedStatus"
+              :items="[
+                { title: 'Todos', value: 'todos' },
+                { title: 'Planejado', value: 'planejado' },
+                { title: 'Confirmado', value: 'confirmado' },
+                { title: 'Em Andamento', value: 'em_andamento' },
+                { title: 'Concluído', value: 'concluido' },
+                { title: 'Cancelado', value: 'cancelado' }
+              ]"
+              label="Filtrar por status"
+              variant="outlined"
+              density="compact"
+            ></v-select>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
 
     <!-- Lista de Eventos -->
-    <div v-if="eventStore.loading" class="text-center py-8">
-      <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600 mx-auto"></div>
+    <div v-if="eventStore.loading">
+      <v-row justify="center">
+        <v-col cols="auto" class="text-center">
+          <v-progress-circular
+            indeterminate
+            color="primary"
+            size="64"
+          ></v-progress-circular>
+          <p class="mt-4 text-h6">Carregando eventos...</p>
+        </v-col>
+      </v-row>
     </div>
 
-    <div v-else-if="filteredEvents.length === 0" class="card">
-      <div class="p-8 text-center text-gray-500">
-        <span class="material-icons text-4xl mb-4 block">event_note</span>
-        <p>Nenhum evento encontrado</p>
-      </div>
+    <v-card v-else-if="filteredEvents.length === 0" elevation="4">
+      <v-card-text>
+        <v-empty-state
+          icon="mdi-calendar-outline"
+          title="Nenhum evento encontrado"
+          text="Comece criando seu primeiro evento"
+        >
+          <template v-slot:actions v-if="canCreateEdit">
+            <v-btn @click="router.push('/events/new')" color="primary">
+              Criar Novo Evento
+            </v-btn>
+          </template>
+        </v-empty-state>
+      </v-card-text>
+    </v-card>
+
+    <div v-else>
+      <v-row>
+        <v-col v-for="event in filteredEvents" :key="event._id" cols="12">
+          <v-card elevation="4" hover>
+            <v-card-text class="pa-6">
+              <div class="d-flex justify-space-between align-start mb-4">
+                <div class="flex-grow-1">
+                  <h3 class="text-h6 font-weight-bold mb-2">{{ event.title }}</h3>
+                  <p class="text-body-2 text-grey-darken-1">{{ event.description }}</p>
+                </div>
+                <v-chip
+                  :color="
+                    event.status === 'planejado' ? 'warning' :
+                    event.status === 'confirmado' ? 'primary' :
+                    event.status === 'em_andamento' ? 'info' :
+                    event.status === 'concluido' ? 'success' : 'error'
+                  "
+                  size="small"
+                  variant="tonal"
+                >
+                  {{ getStatusLabel(event.status) }}
+                </v-chip>
+              </div>
+
+              <v-row class="mb-4">
+                <v-col cols="12" md="6" lg="3">
+                  <div class="d-flex align-center mb-2">
+                    <v-icon class="me-2" size="small" color="primary">mdi-calendar</v-icon>
+                    <span class="text-caption text-grey-darken-1">Data</span>
+                  </div>
+                  <p class="font-weight-medium">
+                    {{ formatDate(event.startDate) }} - {{ formatDate(event.endDate) }}
+                  </p>
+                </v-col>
+                
+                <v-col cols="12" md="6" lg="3">
+                  <div class="d-flex align-center mb-2">
+                    <v-icon class="me-2" size="small" color="primary">mdi-map-marker</v-icon>
+                    <span class="text-caption text-grey-darken-1">Local</span>
+                  </div>
+                  <p class="font-weight-medium">{{ event.location }}</p>
+                </v-col>
+                
+                <v-col cols="12" md="6" lg="3">
+                  <div class="d-flex align-center mb-2">
+                    <v-icon class="me-2" size="small" color="success">mdi-currency-usd</v-icon>
+                    <span class="text-caption text-grey-darken-1">Receita</span>
+                  </div>
+                  <p class="font-weight-bold text-success">{{ formatCurrency(event.revenue) }}</p>
+                </v-col>
+                
+                <v-col cols="12" md="6" lg="3">
+                  <div class="d-flex align-center mb-2">
+                    <v-icon class="me-2" size="small" color="info">mdi-trending-up</v-icon>
+                    <span class="text-caption text-grey-darken-1">Lucro</span>
+                  </div>
+                  <p :class="[
+                    'font-weight-bold',
+                    (event.profit || 0) >= 0 ? 'text-success' : 'text-error'
+                  ]">
+                    {{ formatCurrency(event.profit || 0) }} ({{ event.profitMargin || '0.00' }}%)
+                  </p>
+                </v-col>
+              </v-row>
+
+              <v-divider class="mb-4"></v-divider>
+
+              <div class="d-flex justify-space-between align-center">
+                <div class="d-flex align-center">
+                  <v-avatar size="24" color="primary" class="me-2">
+                    <span class="text-caption">
+                      {{ event.createdBy?.name?.charAt(0).toUpperCase() || 'U' }}
+                    </span>
+                  </v-avatar>
+                  <span class="text-caption text-grey-darken-1">
+                    Criado por {{ event.createdBy?.name }} em {{ formatDate(event.createdAt) }}
+                  </span>
+                </div>
+                
+                <div v-if="canCreateEdit" class="d-flex ga-1">
+                  <v-tooltip text="Editar evento">
+                    <template v-slot:activator="{ props }">
+                      <v-btn
+                        @click="router.push(`/events/${event._id}/edit`)"
+                        icon="mdi-pencil"
+                        color="primary"
+                        size="small"
+                        variant="text"
+                        v-bind="props"
+                      ></v-btn>
+                    </template>
+                  </v-tooltip>
+                  
+                  <v-tooltip text="Excluir evento">
+                    <template v-slot:activator="{ props }">
+                      <v-btn
+                        @click="deleteEvent(event)"
+                        icon="mdi-delete"
+                        color="error"
+                        size="small"
+                        variant="text"
+                        v-bind="props"
+                      ></v-btn>
+                    </template>
+                  </v-tooltip>
+                </div>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
     </div>
-
-    <div v-else class="grid gap-6">
-      <div v-for="event in filteredEvents" :key="event._id" class="card">
-        <div class="p-6">
-          <div class="flex justify-between items-start mb-4">
-            <div>
-              <h3 class="text-lg font-semibold text-gray-900">{{ event.title }}</h3>
-              <p class="text-gray-600 mt-1">{{ event.description }}</p>
-            </div>
-            <span :class="['px-2 py-1 text-xs rounded-full', getStatusColor(event.status)]">
-              {{ getStatusLabel(event.status) }}
-            </span>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <div>
-              <span class="text-sm text-gray-500">Data</span>
-              <p class="font-medium">{{ formatDate(event.startDate) }} - {{ formatDate(event.endDate) }}</p>
-            </div>
-            <div>
-              <span class="text-sm text-gray-500">Local</span>
-              <p class="font-medium">{{ event.location }}</p>
-            </div>
-            <div>
-              <span class="text-sm text-gray-500">Receita</span>
-              <p class="font-medium text-green-600">{{ formatCurrency(event.revenue) }}</p>
-            </div>
-            <div>
-              <span class="text-sm text-gray-500">Lucro</span>
-              <p :class="['font-medium', (event.profit || 0) >= 0 ? 'text-green-600' : 'text-red-600']">
-                {{ formatCurrency(event.profit || 0) }} ({{ event.profitMargin || '0.00' }}%)
-              </p>
-            </div>
-          </div>
-
-          <div class="flex justify-between items-center">
-            <div class="text-sm text-gray-500">
-              Criado por {{ event.createdBy?.name }} em {{ formatDate(event.createdAt) }}
-            </div>
-            <div v-if="canCreateEdit" class="flex space-x-2">
-              <button 
-                @click="router.push(`/events/${event._id}/edit`)"
-                class="btn btn-outline btn-sm"
-              >
-                <span class="material-icons text-sm">edit</span>
-              </button>
-              <button 
-                @click="deleteEvent(event)"
-                class="btn btn-outline btn-sm text-red-600 hover:bg-red-50"
-              >
-                <span class="material-icons text-sm">delete</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  </v-container>
 </template>

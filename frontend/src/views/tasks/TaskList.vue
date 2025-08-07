@@ -138,208 +138,251 @@ onMounted(loadTasks);
 </script>
 
 <template>
-  <div>
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="page-title">Gerenciamento de Tarefas</h1>
-      <button @click="goToNewTask" class="btn btn-primary flex items-center">
-        <span class="material-icons mr-1">add</span>
-        Nova Tarefa
-      </button>
-    </div>
+  <v-container fluid class="pa-6">
+    <!-- Header -->
+    <v-row class="mb-6">
+      <v-col>
+        <div class="d-flex justify-space-between align-center mb-4">
+          <div>
+            <h1 class="text-h4 font-weight-bold mb-2">Gerenciamento de Tarefas</h1>
+          </div>
+          <v-btn
+            @click="goToNewTask"
+            color="primary"
+            prepend-icon="mdi-plus"
+            size="large"
+          >
+            Nova Tarefa
+          </v-btn>
+        </div>
+      </v-col>
+    </v-row>
     
     <!-- Filtros -->
-    <div class="card mb-6">
-      <h2 class="text-lg font-semibold mb-4">Filtros</h2>
+    <v-card class="mb-6" elevation="4">
+      <v-card-title class="d-flex align-center bg-grey-lighten-5">
+        <v-icon class="me-2" color="primary">mdi-filter</v-icon>
+        Filtros
+      </v-card-title>
       
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <!-- Filtro de status -->
-        <div>
-          <label for="status-filter" class="form-label">Status</label>
-          <select
-            id="status-filter"
-            v-model="filters.status"
-            class="form-input"
-          >
-            <option v-for="option in statusOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
-          </select>
-        </div>
-        
-        <!-- Filtro de prioridade -->
-        <div>
-          <label for="priority-filter" class="form-label">Prioridade</label>
-          <select
-            id="priority-filter"
-            v-model="filters.priority"
-            class="form-input"
-          >
-            <option v-for="option in priorityOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
-          </select>
-        </div>
-        
-        <!-- Botões de ação -->
-        <div class="flex items-end space-x-2">
-          <button @click="applyFilters" class="btn btn-primary">
-            <span class="material-icons mr-1">search</span>
-            Filtrar
-          </button>
-          <button @click="clearFilters" class="btn btn-outline">
-            <span class="material-icons mr-1">clear</span>
-            Limpar
-          </button>
-        </div>
-      </div>
-    </div>
+      <v-card-text>
+        <v-row>
+          <v-col cols="12" md="4">
+            <v-select
+              v-model="filters.status"
+              :items="statusOptions"
+              item-title="label"
+              item-value="value"
+              label="Status"
+              variant="outlined"
+              density="compact"
+            ></v-select>
+          </v-col>
+          
+          <v-col cols="12" md="4">
+            <v-select
+              v-model="filters.priority"
+              :items="priorityOptions"
+              item-title="label"
+              item-value="value"
+              label="Prioridade"
+              variant="outlined"
+              density="compact"
+            ></v-select>
+          </v-col>
+          
+          <v-col cols="12" md="4" class="d-flex align-end ga-2">
+            <v-btn
+              @click="applyFilters"
+              color="primary"
+              prepend-icon="mdi-magnify"
+              variant="outlined"
+            >
+              Filtrar
+            </v-btn>
+            <v-btn
+              @click="clearFilters"
+              variant="outlined"
+              prepend-icon="mdi-filter-remove"
+            >
+              Limpar
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
     
     <!-- Lista de tarefas -->
-    <div class="card">
-      <!-- Carregando -->
-      <div v-if="isLoading" class="flex justify-center py-8">
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600"></div>
-      </div>
+    <v-card elevation="4">
+      <!-- Loading -->
+      <v-row v-if="isLoading" justify="center">
+        <v-col cols="auto" class="text-center">
+          <v-progress-circular
+            indeterminate
+            color="primary"
+            size="64"
+          ></v-progress-circular>
+          <p class="mt-4 text-h6">Carregando tarefas...</p>
+        </v-col>
+      </v-row>
       
       <!-- Sem tarefas -->
-      <div v-else-if="filteredTasks.length === 0" class="text-center py-8">
-        <span class="material-icons text-4xl text-gray-400">task</span>
-        <p class="text-gray-500 mt-2">Nenhuma tarefa encontrada</p>
-        <button @click="goToNewTask" class="btn btn-primary mt-4">
-          Criar Nova Tarefa
-        </button>
-      </div>
+      <v-card-text v-else-if="filteredTasks.length === 0">
+        <v-empty-state
+          icon="mdi-clipboard-list-outline"
+          title="Nenhuma tarefa encontrada"
+          text="Comece criando sua primeira tarefa"
+        >
+          <template v-slot:actions>
+            <v-btn @click="goToNewTask" color="primary">
+              Criar Nova Tarefa
+            </v-btn>
+          </template>
+        </v-empty-state>
+      </v-card-text>
       
       <!-- Tabela de tarefas -->
-      <div v-else class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Título
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Prioridade
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Responsável
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Data Limite
-              </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Ações
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="task in filteredTasks" :key="task._id">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="font-medium text-gray-900">{{ task.title }}</div>
-                <div v-if="task.description" class="text-sm text-gray-500 truncate max-w-xs">
-                  {{ task.description }}
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span 
-                  :class="[
-                    'px-2 py-1 text-xs rounded-full',
-                    task.status === 'pendente' ? 'bg-yellow-100 text-yellow-800' :
-                    task.status === 'em_andamento' ? 'bg-blue-100 text-blue-800' :
-                    task.status === 'concluida' ? 'bg-green-100 text-green-800' :
-                    'bg-red-100 text-red-800'
-                  ]"
-                >
-                  {{ task.status === 'pendente' ? 'Pendente' :
-                     task.status === 'em_andamento' ? 'Em andamento' :
-                     task.status === 'concluida' ? 'Concluída' : 'Cancelada' }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span 
-                  :class="[
-                    'px-2 py-1 text-xs rounded-full',
-                    task.priority === 'baixa' ? 'bg-gray-100 text-gray-800' :
-                    task.priority === 'media' ? 'bg-blue-100 text-blue-800' :
-                    task.priority === 'alta' ? 'bg-orange-100 text-orange-800' :
-                    'bg-red-100 text-red-800'
-                  ]"
-                >
-                  {{ task.priority === 'baixa' ? 'Baixa' :
-                     task.priority === 'media' ? 'Média' :
-                     task.priority === 'alta' ? 'Alta' : 'Urgente' }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">
-                  {{ task.assignedTo?.name || 'Não atribuído' }}
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div v-if="task.dueDate" class="text-sm text-gray-900">
-                  {{ new Date(task.dueDate).toLocaleDateString() }}
-                </div>
-                <div v-else class="text-sm text-gray-500">
-                  Sem data
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <div class="flex justify-end space-x-2">
-                  <!-- Botão de concluir (apenas para tarefas não concluídas) -->
-                  <button 
-                    v-if="task.status !== 'concluida' && task.status !== 'cancelada'"
-                    @click="completeTask(task._id)" 
-                    class="text-green-600 hover:text-green-900"
-                    title="Marcar como concluída"
-                  >
-                    <span class="material-icons">check_circle</span>
-                  </button>
-                  
-                  <!-- Botão de editar -->
-                  <button 
-                    @click="editTask(task._id)" 
-                    class="text-blue-600 hover:text-blue-900"
-                    title="Editar tarefa"
-                  >
-                    <span class="material-icons">edit</span>
-                  </button>
-                  
-                  <!-- Botão de excluir -->
-                  <button 
-                    @click="confirmDelete(task)" 
-                    class="text-red-600 hover:text-red-900"
-                    title="Excluir tarefa"
-                  >
-                    <span class="material-icons">delete</span>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <v-data-table
+        v-else
+        :items="filteredTasks"
+        :headers="[
+          { title: 'Título', key: 'title' },
+          { title: 'Status', key: 'status' },
+          { title: 'Prioridade', key: 'priority' },
+          { title: 'Responsável', key: 'assignedTo' },
+          { title: 'Data Limite', key: 'dueDate' },
+          { title: 'Ações', key: 'actions', sortable: false }
+        ]"
+        class="elevation-0"
+        :items-per-page="10"
+      >
+        <template v-slot:item.title="{ item }">
+          <div>
+            <div class="font-weight-medium">{{ item.title }}</div>
+            <div v-if="item.description" class="text-caption text-grey-darken-1">
+              {{ item.description.substring(0, 100) + (item.description.length > 100 ? '...' : '') }}
+            </div>
+          </div>
+        </template>
+
+        <template v-slot:item.status="{ item }">
+          <v-chip
+            :color="
+              item.status === 'pendente' ? 'warning' :
+              item.status === 'em_andamento' ? 'primary' :
+              item.status === 'concluida' ? 'success' : 'error'
+            "
+            size="small"
+            variant="tonal"
+          >
+            {{ item.status === 'pendente' ? 'Pendente' :
+               item.status === 'em_andamento' ? 'Em andamento' :
+               item.status === 'concluida' ? 'Concluída' : 'Cancelada' }}
+          </v-chip>
+        </template>
+
+        <template v-slot:item.priority="{ item }">
+          <v-chip
+            :color="
+              item.priority === 'baixa' ? 'grey' :
+              item.priority === 'media' ? 'info' :
+              item.priority === 'alta' ? 'warning' : 'error'
+            "
+            size="small"
+            variant="tonal"
+          >
+            {{ item.priority === 'baixa' ? 'Baixa' :
+               item.priority === 'media' ? 'Média' :
+               item.priority === 'alta' ? 'Alta' : 'Urgente' }}
+          </v-chip>
+        </template>
+
+        <template v-slot:item.assignedTo="{ item }">
+          <div class="d-flex align-center">
+            <v-avatar size="24" color="primary" class="me-2">
+              <span class="text-caption">
+                {{ item.assignedTo?.name?.charAt(0).toUpperCase() || 'N' }}
+              </span>
+            </v-avatar>
+            {{ item.assignedTo?.name || 'Não atribuído' }}
+          </div>
+        </template>
+
+        <template v-slot:item.dueDate="{ item }">
+          <div v-if="item.dueDate">
+            {{ new Date(item.dueDate).toLocaleDateString('pt-BR') }}
+          </div>
+          <span v-else class="text-grey-darken-1">Sem data</span>
+        </template>
+
+        <template v-slot:item.actions="{ item }">
+          <div class="d-flex ga-1">
+            <v-tooltip text="Marcar como concluída" v-if="item.status !== 'concluida' && item.status !== 'cancelada'">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  @click="completeTask(item._id)"
+                  icon="mdi-check-circle"
+                  color="success"
+                  size="small"
+                  variant="text"
+                  v-bind="props"
+                ></v-btn>
+              </template>
+            </v-tooltip>
+            
+            <v-tooltip text="Editar tarefa">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  @click="editTask(item._id)"
+                  icon="mdi-pencil"
+                  color="primary"
+                  size="small"
+                  variant="text"
+                  v-bind="props"
+                ></v-btn>
+              </template>
+            </v-tooltip>
+            
+            <v-tooltip text="Excluir tarefa">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  @click="confirmDelete(item)"
+                  icon="mdi-delete"
+                  color="error"
+                  size="small"
+                  variant="text"
+                  v-bind="props"
+                ></v-btn>
+              </template>
+            </v-tooltip>
+          </div>
+        </template>
+      </v-data-table>
+    </v-card>
     
     <!-- Modal de confirmação de exclusão -->
-    <div v-if="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 max-w-md w-full">
-        <h3 class="text-lg font-semibold mb-4">Confirmar exclusão</h3>
-        <p class="mb-6">
+    <v-dialog v-model="showDeleteModal" max-width="400">
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          <v-icon class="me-2" color="error">mdi-alert-circle</v-icon>
+          Confirmar exclusão
+        </v-card-title>
+        
+        <v-card-text>
           Tem certeza que deseja excluir a tarefa "{{ taskToDelete?.title }}"?
           Esta ação não pode ser desfeita.
-        </p>
-        <div class="flex justify-end space-x-2">
-          <button @click="showDeleteModal = false" class="btn btn-outline">
+        </v-card-text>
+        
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn @click="showDeleteModal = false" variant="outlined">
             Cancelar
-          </button>
-          <button @click="deleteTask" class="btn btn-danger">
+          </v-btn>
+          <v-btn @click="deleteTask" color="error">
             Excluir
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </v-container>
 </template>

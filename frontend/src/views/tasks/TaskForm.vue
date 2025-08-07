@@ -114,121 +114,206 @@ const cancelForm = () => {
 </script>
 
 <template>
-  <div>
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="page-title">{{ isEditing ? 'Editar Tarefa' : 'Nova Tarefa' }}</h1>
-    </div>
+  <v-container fluid class="pa-6">
+    <!-- Header -->
+    <v-row class="mb-6">
+      <v-col>
+        <div class="d-flex justify-space-between align-center mb-4">
+          <div>
+            <h1 class="text-h4 font-weight-bold mb-2">
+              {{ isEditing ? 'Editar Tarefa' : 'Nova Tarefa' }}
+            </h1>
+            <v-breadcrumbs
+              :items="[
+                { title: 'Dashboard', to: '/' },
+                { title: 'Tarefas', to: '/tasks' },
+                { title: isEditing ? 'Editar' : 'Nova', disabled: true }
+              ]"
+              density="compact"
+            ></v-breadcrumbs>
+          </div>
+          
+          <v-btn
+            @click="cancelForm"
+            variant="outlined"
+            prepend-icon="mdi-arrow-left"
+            size="large"
+          >
+            Voltar
+          </v-btn>
+        </div>
+      </v-col>
+    </v-row>
     
     <!-- Formulário -->
-    <div class="card">
-      <!-- Carregando -->
-      <div v-if="isLoading" class="flex justify-center py-8">
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600"></div>
-      </div>
+    <v-card elevation="4">
+      <v-card-title class="d-flex align-center bg-grey-lighten-5">
+        <v-icon class="me-2" color="primary">
+          {{ isEditing ? 'mdi-pencil' : 'mdi-plus' }}
+        </v-icon>
+        {{ isEditing ? 'Editar Tarefa' : 'Criar Nova Tarefa' }}
+      </v-card-title>
       
-      <!-- Formulário -->
-      <form v-else @submit.prevent="saveTask" class="space-y-6">
-        <!-- Mensagem de erro -->
-        <div v-if="errorMessage" class="bg-red-50 border-l-4 border-red-500 p-4">
-          <div class="flex">
-            <div class="flex-shrink-0">
-              <span class="material-icons text-red-500">error</span>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm text-red-700">{{ errorMessage }}</p>
-            </div>
-          </div>
-        </div>
+      <v-card-text class="pa-6">
+        <!-- Loading -->
+        <v-row v-if="isLoading" justify="center">
+          <v-col cols="auto" class="text-center">
+            <v-progress-circular
+              indeterminate
+              color="primary"
+              size="64"
+            ></v-progress-circular>
+            <p class="mt-4 text-h6">Carregando dados...</p>
+          </v-col>
+        </v-row>
         
-        <!-- Título -->
-        <div>
-          <label for="title" class="form-label">Título <span class="text-red-500">*</span></label>
-          <input
-            id="title"
-            v-model="task.title"
-            type="text"
-            required
-            class="form-input"
-            placeholder="Digite o título da tarefa"
-          />
-        </div>
-        
-        <!-- Descrição -->
-        <div>
-          <label for="description" class="form-label">Descrição</label>
-          <textarea
-            id="description"
-            v-model="task.description"
-            rows="4"
-            class="form-input"
-            placeholder="Descreva a tarefa em detalhes"
-          ></textarea>
-        </div>
-        
-        <!-- Status e Prioridade -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Status -->
-          <div>
-            <label for="status" class="form-label">Status</label>
-            <select
-              id="status"
-              v-model="task.status"
-              class="form-input"
-            >
-              <option v-for="option in statusOptions" :key="option.value" :value="option.value">
-                {{ option.label }}
-              </option>
-            </select>
-          </div>
-          
-          <!-- Prioridade -->
-          <div>
-            <label for="priority" class="form-label">Prioridade</label>
-            <select
-              id="priority"
-              v-model="task.priority"
-              class="form-input"
-            >
-              <option v-for="option in priorityOptions" :key="option.value" :value="option.value">
-                {{ option.label }}
-              </option>
-            </select>
-          </div>
-        </div>
-        
-        <!-- Data limite -->
-        <div>
-          <label for="due-date" class="form-label">Data limite</label>
-          <input
-            id="due-date"
-            v-model="task.dueDate"
-            type="date"
-            class="form-input"
-          />
-        </div>
-        
-        <!-- Botões de ação -->
-        <div class="flex justify-end space-x-3">
-          <button
-            type="button"
-            @click="cancelForm"
-            class="btn btn-outline"
+        <!-- Formulário -->
+        <v-form v-else @submit.prevent="saveTask">
+          <!-- Alerta de erro -->
+          <v-alert
+            v-if="errorMessage"
+            type="error"
+            variant="tonal"
+            closable
+            class="mb-6"
+            @click:close="errorMessage = ''"
           >
-            Cancelar
-          </button>
+            {{ errorMessage }}
+          </v-alert>
           
-          <button
-            type="submit"
-            :disabled="isLoading"
-            class="btn btn-primary"
-          >
-            <span v-if="isLoading" class="animate-spin mr-2">
-              <span class="material-icons text-sm">refresh</span>
-            </span>
-            {{ isEditing ? 'Atualizar' : 'Criar' }} Tarefa
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
+          <v-row>
+            <!-- Título -->
+            <v-col cols="12">
+              <v-text-field
+                v-model="task.title"
+                label="Título da Tarefa"
+                placeholder="Digite o título da tarefa"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="mdi-clipboard-text"
+                :rules="[v => !!v || 'Título é obrigatório']"
+                required
+              ></v-text-field>
+            </v-col>
+            
+            <!-- Descrição -->
+            <v-col cols="12">
+              <v-textarea
+                v-model="task.description"
+                label="Descrição"
+                placeholder="Descreva a tarefa em detalhes"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="mdi-text"
+                rows="4"
+                auto-grow
+              ></v-textarea>
+            </v-col>
+            
+            <!-- Status -->
+            <v-col cols="12" md="6">
+              <v-select
+                v-model="task.status"
+                :items="statusOptions"
+                item-title="label"
+                item-value="value"
+                label="Status"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="mdi-flag"
+              >
+                <template v-slot:item="{ props, item }">
+                  <v-list-item v-bind="props">
+                    <template v-slot:prepend>
+                      <v-chip
+                        :color="
+                          item.raw.value === 'pendente' ? 'warning' :
+                          item.raw.value === 'em_andamento' ? 'primary' :
+                          item.raw.value === 'concluida' ? 'success' : 'error'
+                        "
+                        size="small"
+                        variant="tonal"
+                      >
+                        {{ item.raw.label }}
+                      </v-chip>
+                    </template>
+                  </v-list-item>
+                </template>
+              </v-select>
+            </v-col>
+            
+            <!-- Prioridade -->
+            <v-col cols="12" md="6">
+              <v-select
+                v-model="task.priority"
+                :items="priorityOptions"
+                item-title="label"
+                item-value="value"
+                label="Prioridade"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="mdi-priority-high"
+              >
+                <template v-slot:item="{ props, item }">
+                  <v-list-item v-bind="props">
+                    <template v-slot:prepend>
+                      <v-chip
+                        :color="
+                          item.raw.value === 'baixa' ? 'grey' :
+                          item.raw.value === 'media' ? 'info' :
+                          item.raw.value === 'alta' ? 'warning' : 'error'
+                        "
+                        size="small"
+                        variant="tonal"
+                      >
+                        {{ item.raw.label }}
+                      </v-chip>
+                    </template>
+                  </v-list-item>
+                </template>
+              </v-select>
+            </v-col>
+            
+            <!-- Data limite -->
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="task.dueDate"
+                type="date"
+                label="Data Limite"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="mdi-calendar"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        </v-form>
+      </v-card-text>
+      
+      <v-divider></v-divider>
+      
+      <!-- Ações -->
+      <v-card-actions class="pa-6">
+        <v-spacer></v-spacer>
+        
+        <v-btn
+          @click="cancelForm"
+          variant="outlined"
+          size="large"
+          prepend-icon="mdi-close"
+        >
+          Cancelar
+        </v-btn>
+        
+        <v-btn
+          @click="saveTask"
+          color="primary"
+          size="large"
+          :loading="isLoading"
+          :prepend-icon="isEditing ? 'mdi-content-save' : 'mdi-plus'"
+        >
+          {{ isEditing ? 'Atualizar' : 'Criar' }} Tarefa
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-container>
 </template>

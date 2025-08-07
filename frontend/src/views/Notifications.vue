@@ -1,37 +1,22 @@
 <script setup>
-import { computed, onMounted } from 'vue';
-import { useNotificationStore } from '../stores/notification';
+import { onMounted } from 'vue';
+import { useNotifications } from '../composables/useNotifications';
 
-// Store de notificações
-const notificationStore = useNotificationStore();
+const { 
+  notifications, 
+  unreadCount, 
+  hasUnread, 
+  markAsRead, 
+  markAllAsRead, 
+  removeNotification, 
+  clearAll,
+  initializeIfEmpty
+} = useNotifications();
 
-// Carrega notificações ao montar o componente
+// Carrega notificações ao montar
 onMounted(() => {
-  notificationStore.loadNotifications();
+  initializeIfEmpty();
 });
-
-// Notificações do store
-const notifications = computed(() => notificationStore.allNotifications);
-
-// Marcar notificação como lida
-const markAsRead = (id) => {
-  notificationStore.markAsRead(id);
-};
-
-// Marcar todas como lidas
-const markAllAsRead = () => {
-  notificationStore.markAllAsRead();
-};
-
-// Excluir notificação
-const deleteNotification = (id) => {
-  notificationStore.removeNotification(id);
-};
-
-// Limpar todas as notificações
-const clearAllNotifications = () => {
-  notificationStore.clearAllNotifications();
-};
 
 // Formatar data relativa
 const formatRelativeTime = (date) => {
@@ -49,110 +34,140 @@ const formatRelativeTime = (date) => {
   
   return date.toLocaleDateString();
 };
-
-// Ícone baseado no tipo
-const getIcon = (type) => {
-  switch (type) {
-    case 'task': return 'task';
-    case 'stock': return 'inventory';
-    case 'finance': return 'payments';
-    case 'hr': return 'people';
-    case 'system': return 'system_update';
-    default: return 'notifications';
-  }
-};
-
-// Cor baseada no tipo
-const getColor = (type) => {
-  switch (type) {
-    case 'task': return 'blue';
-    case 'stock': return 'yellow';
-    case 'finance': return 'green';
-    case 'hr': return 'purple';
-    case 'system': return 'gray';
-    default: return 'gray';
-  }
-};
 </script>
 
 <template>
-  <div>
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="page-title">Notificações</h1>
-      
-      <div class="flex space-x-2">
-        <button 
-          @click="markAllAsRead" 
-          class="btn btn-outline flex items-center"
-          :disabled="!notificationStore.hasUnread"
-        >
-          <span class="material-icons mr-1">done_all</span>
-          Marcar todas como lidas
-        </button>
-        
-        <button 
-          @click="clearAllNotifications" 
-          class="btn btn-outline flex items-center"
-          :disabled="notifications.length === 0"
-        >
-          <span class="material-icons mr-1">delete_sweep</span>
-          Limpar todas
-        </button>
-      </div>
-    </div>
+  <v-container fluid class="pa-6">
+    <!-- Header -->
+    <v-row class="mb-6">
+      <v-col>
+        <div class="d-flex justify-space-between align-center mb-4">
+          <div>
+            <h1 class="text-h4 font-weight-bold mb-2">Notificações</h1>
+            <v-chip v-if="hasUnread" color="primary" size="small">
+              {{ unreadCount }} não lidas
+            </v-chip>
+          </div>
+          
+          <div class="d-flex ga-2">
+            <v-btn
+              @click="markAllAsRead"
+              variant="outlined"
+              prepend-icon="mdi-check-all"
+              size="large"
+              :disabled="!hasUnread"
+            >
+              Marcar todas como lidas
+            </v-btn>
+            
+            <v-btn
+              @click="clearAll"
+              variant="outlined"
+              prepend-icon="mdi-delete-sweep"
+              size="large"
+              :disabled="notifications.length === 0"
+            >
+              Limpar todas
+            </v-btn>
+          </div>
+        </div>
+      </v-col>
+    </v-row>
     
     <!-- Lista de notificações -->
-    <div class="card">
-      <div v-if="notifications.length === 0" class="text-center py-8">
-        <span class="material-icons text-4xl text-gray-400">notifications_off</span>
-        <p class="text-gray-500 mt-2">Nenhuma notificação</p>
-      </div>
+    <v-card elevation="4">
+      <v-card-text v-if="notifications.length === 0">
+        <v-empty-state
+          icon="mdi-bell-off-outline"
+          title="Nenhuma notificação"
+          text="Você está em dia! Não há notificações pendentes."
+        ></v-empty-state>
+      </v-card-text>
       
-      <ul v-else class="divide-y divide-gray-200">
-        <li 
-          v-for="notification in notifications" 
+      <v-list v-else>
+        <v-list-item
+          v-for="notification in notifications"
           :key="notification.id"
-          :class="['p-4 hover:bg-gray-50', !notification.read && 'bg-blue-50']"
+          :class="!notification.read ? 'bg-primary-lighten-5' : ''"
+          class="px-4 py-3"
         >
-          <div class="flex">
-            <div class="flex-shrink-0">
-              <div 
-                :class="[
-                  'w-10 h-10 rounded-full flex items-center justify-center',
-                  `bg-${getColor(notification.type)}-100`,
-                  `text-${getColor(notification.type)}-600`
-                ]"
-              >
-                <span class="material-icons">{{ getIcon(notification.type) }}</span>
-              </div>
-            </div>
+          <template v-slot:prepend>
+            <v-avatar
+              :color="
+                notification.type === 'task' ? 'primary' :
+                notification.type === 'stock' ? 'warning' :
+                notification.type === 'finance' ? 'success' :
+                notification.type === 'hr' ? 'info' :
+                notification.type === 'system' ? 'grey' : 'grey'
+              "
+              size="40"
+            >
+              <v-icon>
+                {{
+                  notification.type === 'task' ? 'mdi-clipboard-check' :
+                  notification.type === 'stock' ? 'mdi-package-variant' :
+                  notification.type === 'finance' ? 'mdi-currency-usd' :
+                  notification.type === 'hr' ? 'mdi-account-group' :
+                  notification.type === 'system' ? 'mdi-cog' : 'mdi-bell'
+                }}
+              </v-icon>
+            </v-avatar>
+          </template>
+
+          <v-list-item-title class="font-weight-medium mb-1">
+            {{ notification.title }}
+            <v-chip v-if="!notification.read" color="primary" size="x-small" class="ml-2">
+              Nova
+            </v-chip>
+            <v-chip 
+              v-if="notification.priority === 'high'" 
+              color="error" 
+              size="x-small" 
+              class="ml-1"
+            >
+              Urgente
+            </v-chip>
+          </v-list-item-title>
+          
+          <v-list-item-subtitle class="text-body-2 mb-2">
+            {{ notification.message }}
+          </v-list-item-subtitle>
+          
+          <div class="d-flex justify-space-between align-center">
+            <span class="text-caption text-grey-darken-1">
+              {{ formatRelativeTime(notification.date) }}
+            </span>
             
-            <div class="ml-4 flex-1">
-              <div class="flex items-center justify-between">
-                <p class="text-sm font-medium text-gray-900">{{ notification.title }}</p>
-                <p class="text-xs text-gray-500">{{ formatRelativeTime(notification.date) }}</p>
-              </div>
-              <p class="text-sm text-gray-500">{{ notification.message }}</p>
+            <div class="d-flex ga-1">
+              <v-tooltip text="Marcar como lida" v-if="!notification.read">
+                <template v-slot:activator="{ props }">
+                  <v-btn
+                    @click="markAsRead(notification.id)"
+                    icon="mdi-check"
+                    color="primary"
+                    size="small"
+                    variant="text"
+                    v-bind="props"
+                  ></v-btn>
+                </template>
+              </v-tooltip>
               
-              <div class="mt-2 flex space-x-2">
-                <button 
-                  v-if="!notification.read"
-                  @click="markAsRead(notification.id)" 
-                  class="text-xs text-blue-600 hover:text-blue-800"
-                >
-                  Marcar como lida
-                </button>
-                <button 
-                  @click="deleteNotification(notification.id)" 
-                  class="text-xs text-red-600 hover:text-red-800"
-                >
-                  Excluir
-                </button>
-              </div>
+              <v-tooltip text="Excluir notificação">
+                <template v-slot:activator="{ props }">
+                  <v-btn
+                    @click="removeNotification(notification.id)"
+                    icon="mdi-delete"
+                    color="error"
+                    size="small"
+                    variant="text"
+                    v-bind="props"
+                  ></v-btn>
+                </template>
+              </v-tooltip>
             </div>
           </div>
-        </li>
-      </ul>
-    </div>
-  </div>
+        </v-list-item>
+      </v-list>
+    </v-card>
+  </v-container>
 </template>

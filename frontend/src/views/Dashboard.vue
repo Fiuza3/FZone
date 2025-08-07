@@ -7,6 +7,8 @@
 	import { useHRStore } from "../stores/hr";
 	import { useDashboardStore } from "../stores/dashboard";
 	import { useEventStore } from "../stores/event";
+	import { useNotifications } from "../composables/useNotifications";
+	import { useAutomaticNotifications } from "../composables/useAutomaticNotifications";
 
 	// Stores
 	const authStore = useAuthStore();
@@ -16,6 +18,21 @@
 	const hrStore = useHRStore();
 	const dashboardStore = useDashboardStore();
 	const eventStore = useEventStore();
+	
+	// Notificações
+	const { 
+		addNotification, 
+		showSuccess, 
+		showError, 
+		showWarning,
+		initializeIfEmpty
+	} = useNotifications();
+	
+	// Notificações automáticas
+	const { 
+		startPeriodicChecks,
+		generateRealNotifications
+	} = useAutomaticNotifications();
 
 	// Estado
 	const isLoading = ref(true);
@@ -72,8 +89,25 @@
 			await eventStore.fetchEvents();
 
 			console.log("✅ Dashboard avançado carregado com sucesso");
+			
+			// Inicializar notificações de exemplo
+			initializeExampleNotifications();
+			
+			// Executar verificações com dados reais
+			generateRealNotifications();
+			
+			// Iniciar verificações periódicas
+			const stopPeriodicChecks = startPeriodicChecks();
+			
+			showSuccess('Dashboard carregado com sucesso!');
+			
+			// Cleanup ao desmontar o componente
+			return () => {
+				stopPeriodicChecks();
+			};
 		} catch (error) {
 			console.error("❌ Erro ao carregar dashboard:", error);
+			showError('Erro ao carregar dados do dashboard');
 		} finally {
 			isLoading.value = false;
 		}
@@ -144,27 +178,27 @@
 			<v-row v-if="dashboardStore.metrics" class="mb-6">
 				<!-- Total de Eventos -->
 				<v-col cols="12" sm="6" lg="3">
-					<v-card color="primary" theme="dark" elevation="8">
+					<v-card color="primary-lighten-4" elevation="8">
 						<v-card-text>
 							<div class="d-flex justify-space-between align-center">
 								<div>
-									<v-card-subtitle class="text-primary-lighten-2 pa-0"
+									<v-card-subtitle class="text-primary-darken-2 pa-0"
 										>Total de Eventos</v-card-subtitle
 									>
-									<div class="text-h3 font-weight-bold">
+									<div class="text-h3 font-weight-bold text-black">
 										{{ dashboardStore.metrics.events.total }}
 									</div>
-									<div class="text-caption mt-1">
+									<div class="text-caption mt-1 text-black">
 										{{ dashboardStore.metrics.events.thisMonth }} este mês
 									</div>
 								</div>
-								<v-icon size="48" class="text-primary-lighten-2"
+								<v-icon size="48" class="text-primary-darken-1"
 									>mdi-calendar-multiple</v-icon
 								>
 							</div>
 							<v-sparkline
 								:value="[2, 5, 3, 8, 7, 12, 15]"
-								color="white"
+								color="primary"
 								height="40"
 								class="mt-3"
 							></v-sparkline>
@@ -174,30 +208,30 @@
 
 				<!-- Receita Mensal -->
 				<v-col cols="12" sm="6" lg="3">
-					<v-card color="success" theme="dark" elevation="8">
+					<v-card color="success-lighten-4" elevation="8">
 						<v-card-text>
 							<div class="d-flex justify-space-between align-center">
 								<div>
-									<v-card-subtitle class="text-success-lighten-2 pa-0"
+									<v-card-subtitle class="text-success-darken-2 pa-0"
 										>Receita Mensal</v-card-subtitle
 									>
-									<div class="text-h3 font-weight-bold">
+									<div class="text-h3 font-weight-bold text-black">
 										{{
 											formatCurrency(dashboardStore.metrics.revenue.thisMonth)
 										}}
 									</div>
-									<div class="text-caption mt-1">
+									<div class="text-caption mt-1 text-black">
 										<v-icon size="small" class="me-1">mdi-trending-up</v-icon>
 										{{ dashboardStore.monthlyGrowth }}% crescimento
 									</div>
 								</div>
-								<v-icon size="48" class="text-success-lighten-2"
+								<v-icon size="48" class="text-success-darken-1"
 									>mdi-currency-usd</v-icon
 								>
 							</div>
 							<v-sparkline
 								:value="[10, 15, 12, 20, 18, 25, 30]"
-								color="white"
+								color="success"
 								height="40"
 								class="mt-3"
 							></v-sparkline>
@@ -207,19 +241,19 @@
 
 				<!-- Próximos Eventos -->
 				<v-col cols="12" sm="6" lg="3">
-					<v-card color="secondary" theme="dark" elevation="8">
+					<v-card color="info-lighten-4" elevation="8">
 						<v-card-text>
 							<div class="d-flex justify-space-between align-center">
 								<div>
-									<v-card-subtitle class="text-secondary-lighten-2 pa-0"
+									<v-card-subtitle class="text-info-darken-2 pa-0"
 										>Próximos Eventos</v-card-subtitle
 									>
-									<div class="text-h3 font-weight-bold">
+									<div class="text-h3 font-weight-bold text-black">
 										{{ dashboardStore.metrics.events.upcoming }}
 									</div>
-									<div class="text-caption mt-1">Próximos 30 dias</div>
+									<div class="text-caption mt-1 text-black">Próximos 30 dias</div>
 								</div>
-								<v-icon size="48" class="text-secondary-lighten-2"
+								<v-icon size="48" class="text-info-darken-1"
 									>mdi-calendar-clock</v-icon
 								>
 							</div>
@@ -227,7 +261,7 @@
 								:model-value="
 									(dashboardStore.metrics.events.upcoming / 20) * 100
 								"
-								color="white"
+								color="info"
 								height="6"
 								rounded
 								class="mt-3"
@@ -238,22 +272,22 @@
 
 				<!-- Alertas -->
 				<v-col cols="12" sm="6" lg="3">
-					<v-card color="warning" theme="dark" elevation="8">
+					<v-card color="warning-lighten-4" elevation="8">
 						<v-card-text>
 							<div class="d-flex justify-space-between align-center">
 								<div>
-									<v-card-subtitle class="text-warning-lighten-2 pa-0"
+									<v-card-subtitle class="text-warning-darken-2 pa-0"
 										>Alertas</v-card-subtitle
 									>
-									<div class="text-h3 font-weight-bold">
+									<div class="text-h3 font-weight-bold text-black">
 										{{ dashboardStore.totalAlerts }}
 									</div>
-									<div class="text-caption mt-1">
+									<div class="text-caption mt-1 text-black">
 										{{ dashboardStore.metrics.alerts.lowStock }} estoque baixo
 									</div>
 								</div>
 								<v-badge :content="dashboardStore.totalAlerts" color="error">
-									<v-icon size="48" class="text-warning-lighten-2"
+									<v-icon size="48" class="text-warning-darken-1"
 										>mdi-alert-circle</v-icon
 									>
 								</v-badge>

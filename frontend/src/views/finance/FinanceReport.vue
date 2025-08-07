@@ -1,293 +1,485 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { useFinanceStore } from '../../stores/finance';
+	import { ref, onMounted, computed } from "vue";
+	import { useRouter } from "vue-router";
+	import { useFinanceStore } from "../../stores/finance";
 
-const router = useRouter();
-const financeStore = useFinanceStore();
+	const router = useRouter();
+	const financeStore = useFinanceStore();
 
-// Estado
-const isLoading = ref(true);
-const dateRange = ref({
-  startDate: new Date(new Date().setDate(1)).toISOString().split('T')[0], // Primeiro dia do mês atual
-  endDate: new Date().toISOString().split('T')[0] // Hoje
-});
+	const isLoading = ref(true);
+	const dateRange = ref({
+		startDate: new Date(new Date().setDate(1)).toISOString().split("T")[0],
+		endDate: new Date().toISOString().split("T")[0],
+	});
+	const showExportDialog = ref(false);
 
-// Carrega relatório
-const loadReport = async () => {
-  console.log('🔄 Gerando relatório financeiro');
-  isLoading.value = true;
-  
-  try {
-    await financeStore.getFinancialReport(dateRange.value);
-    console.log('✅ Relatório gerado com sucesso');
-  } catch (error) {
-    console.error('❌ Erro ao gerar relatório:', error);
-  } finally {
-    isLoading.value = false;
-  }
-};
+	const loadReport = async () => {
+		isLoading.value = true;
+		try {
+			await financeStore.getFinancialReport(dateRange.value);
+		} catch (error) {
+			console.error("Erro ao gerar relatório:", error);
+		} finally {
+			isLoading.value = false;
+		}
+	};
 
-// Volta para a lista de transações
-const goToFinance = () => {
-  router.push('/finance');
-};
+	const formatCurrency = (value) => {
+		return new Intl.NumberFormat("pt-BR", {
+			style: "currency",
+			currency: "BRL",
+		}).format(value);
+	};
 
-// Formata moeda
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(value);
-};
+	const setPeriod = (period) => {
+		const today = new Date();
+		let startDate = new Date();
 
-// Atualiza relatório quando o período muda
-const updateReport = () => {
-  loadReport();
-};
+		switch (period) {
+			case "today":
+				startDate = today;
+				break;
+			case "week":
+				startDate = new Date(today.setDate(today.getDate() - 7));
+				break;
+			case "month":
+				startDate = new Date(today.setMonth(today.getMonth() - 1));
+				break;
+			case "quarter":
+				startDate = new Date(today.setMonth(today.getMonth() - 3));
+				break;
+			case "year":
+				startDate = new Date(today.setFullYear(today.getFullYear() - 1));
+				break;
+		}
 
-// Períodos predefinidos
-const setPeriod = (period) => {
-  const today = new Date();
-  let startDate = new Date();
-  
-  switch (period) {
-    case 'today':
-      startDate = today;
-      break;
-    case 'week':
-      startDate = new Date(today.setDate(today.getDate() - 7));
-      break;
-    case 'month':
-      startDate = new Date(today.setMonth(today.getMonth() - 1));
-      break;
-    case 'quarter':
-      startDate = new Date(today.setMonth(today.getMonth() - 3));
-      break;
-    case 'year':
-      startDate = new Date(today.setFullYear(today.getFullYear() - 1));
-      break;
-  }
-  
-  dateRange.value = {
-    startDate: startDate.toISOString().split('T')[0],
-    endDate: new Date().toISOString().split('T')[0]
-  };
-  
-  loadReport();
-};
+		dateRange.value = {
+			startDate: startDate.toISOString().split("T")[0],
+			endDate: new Date().toISOString().split("T")[0],
+		};
 
-// Carrega relatório ao montar o componente
-onMounted(loadReport);
+		loadReport();
+	};
+
+	const exportReport = async (format) => {
+		try {
+			const data = {
+				period: financeStore.report?.period,
+				balance: financeStore.report?.balance,
+				categoryBreakdown: financeStore.report?.categoryBreakdown,
+				paymentMethodBreakdown: financeStore.report?.paymentMethodBreakdown,
+			};
+
+			if (format === "json") {
+				const blob = new Blob([JSON.stringify(data, null, 2)], {
+					type: "application/json",
+				});
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement("a");
+				a.href = url;
+				a.download = `relatorio-financeiro-${dateRange.value.startDate}-${dateRange.value.endDate}.json`;
+				a.click();
+			} else if (format === "csv") {
+				let csv = "Tipo,Categoria,Quantidade,Total\n";
+				financeStore.report?.categoryBreakdown?.forEach((item) => {
+					csv += `${item._id.type},${item._id.category},${item.count},${item.total}\n`;
+				});
+				const blob = new Blob([csv], { type: "text/csv" });
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement("a");
+				a.href = url;
+				a.download = `relatorio-financeiro-${dateRange.value.startDate}-${dateRange.value.endDate}.csv`;
+				a.click();
+			}
+
+			showExportDialog.value = false;
+		} catch (error) {
+			console.error("Erro ao exportar:", error);
+		}
+	};
+
+	onMounted(loadReport);
 </script>
 
 <template>
-  <div>
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="page-title">Relatório Financeiro</h1>
-      <button @click="goToFinance" class="btn btn-outline flex items-center">
-        <span class="material-icons mr-1">arrow_back</span>
-        Voltar para Financeiro
-      </button>
-    </div>
-    
-    <!-- Seleção de período -->
-    <div class="card mb-6">
-      <h2 class="text-lg font-semibold mb-4">Período</h2>
-      
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <!-- Data inicial -->
-        <div>
-          <label for="start-date" class="form-label">Data inicial</label>
-          <input
-            id="start-date"
-            v-model="dateRange.startDate"
-            type="date"
-            class="form-input"
-          />
-        </div>
-        
-        <!-- Data final -->
-        <div>
-          <label for="end-date" class="form-label">Data final</label>
-          <input
-            id="end-date"
-            v-model="dateRange.endDate"
-            type="date"
-            class="form-input"
-          />
-        </div>
-        
-        <!-- Botão de atualizar -->
-        <div class="flex items-end">
-          <button @click="updateReport" class="btn btn-primary">
-            <span class="material-icons mr-1">refresh</span>
-            Atualizar
-          </button>
-        </div>
-      </div>
-      
-      <!-- Períodos predefinidos -->
-      <div class="flex flex-wrap gap-2 mt-4">
-        <button @click="setPeriod('today')" class="btn btn-outline text-sm py-1">Hoje</button>
-        <button @click="setPeriod('week')" class="btn btn-outline text-sm py-1">Últimos 7 dias</button>
-        <button @click="setPeriod('month')" class="btn btn-outline text-sm py-1">Último mês</button>
-        <button @click="setPeriod('quarter')" class="btn btn-outline text-sm py-1">Último trimestre</button>
-        <button @click="setPeriod('year')" class="btn btn-outline text-sm py-1">Último ano</button>
-      </div>
-    </div>
-    
-    <!-- Carregando -->
-    <div v-if="isLoading" class="flex justify-center py-8">
-      <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
-    </div>
-    
-    <!-- Relatório -->
-    <div v-else-if="financeStore.report" class="space-y-6">
-      <!-- Resumo geral -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="card bg-green-50 border-l-4 border-green-500">
-          <h3 class="font-semibold text-green-700">Receitas</h3>
-          <p class="text-3xl font-bold mt-2 text-green-600">{{ formatCurrency(financeStore.report.balance.receitas) }}</p>
-        </div>
-        
-        <div class="card bg-red-50 border-l-4 border-red-500">
-          <h3 class="font-semibold text-red-700">Despesas</h3>
-          <p class="text-3xl font-bold mt-2 text-red-600">{{ formatCurrency(financeStore.report.balance.despesas) }}</p>
-        </div>
-        
-        <div 
-          :class="[
-            'card border-l-4',
-            financeStore.report.balance.balance >= 0 
-              ? 'bg-blue-50 border-blue-500' 
-              : 'bg-red-50 border-red-500'
-          ]"
-        >
-          <h3 
-            :class="[
-              'font-semibold',
-              financeStore.report.balance.balance >= 0 ? 'text-blue-700' : 'text-red-700'
-            ]"
-          >
-            Saldo
-          </h3>
-          <p 
-            :class="[
-              'text-3xl font-bold mt-2',
-              financeStore.report.balance.balance >= 0 ? 'text-blue-600' : 'text-red-600'
-            ]"
-          >
-            {{ formatCurrency(financeStore.report.balance.balance) }}
-          </p>
-        </div>
-      </div>
-      
-      <!-- Breakdown por categoria -->
-      <div class="card">
-        <h2 class="section-title">Transações por Categoria</h2>
-        
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tipo
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Categoria
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Quantidade
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Total
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="(item, index) in financeStore.report.categoryBreakdown" :key="index">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span 
-                    :class="[
-                      'px-2 py-1 text-xs rounded-full',
-                      item._id.type === 'receita' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    ]"
-                  >
-                    {{ item._id.type === 'receita' ? 'Receita' : 'Despesa' }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
-                    {{ item._id.category }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {{ item.count }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div 
-                    :class="[
-                      'font-medium',
-                      item._id.type === 'receita' ? 'text-green-600' : 'text-red-600'
-                    ]"
-                  >
-                    {{ formatCurrency(item.total) }}
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      
-      <!-- Breakdown por método de pagamento -->
-      <div class="card">
-        <h2 class="section-title">Transações por Método de Pagamento</h2>
-        
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Método de Pagamento
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Quantidade
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Total
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="(item, index) in financeStore.report.paymentMethodBreakdown" :key="index">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
-                    {{ item._id === 'dinheiro' ? 'Dinheiro' :
-                       item._id === 'cartao' ? 'Cartão' :
-                       item._id === 'pix' ? 'PIX' :
-                       item._id === 'transferencia' ? 'Transferência' :
-                       item._id === 'boleto' ? 'Boleto' : item._id }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {{ item.count }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
-                  {{ formatCurrency(item.total) }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Sem dados -->
-    <div v-else class="card py-8 text-center">
-      <span class="material-icons text-4xl text-gray-400">info</span>
-      <p class="text-gray-500 mt-2">Nenhum dado disponível para o período selecionado</p>
-    </div>
-  </div>
+	<v-container fluid class="pa-6">
+		<!-- Header -->
+		<v-row class="mb-6">
+			<v-col>
+				<div class="d-flex justify-space-between align-center mb-4">
+					<div>
+						<h1 class="text-h4 font-weight-bold">Relatório Financeiro</h1>
+					</div>
+
+					<div class="d-flex ga-3">
+						<v-btn
+							@click="showExportDialog = true"
+							color="success"
+							variant="outlined"
+							prepend-icon="mdi-download"
+							size="large"
+						>
+							Exportar
+						</v-btn>
+
+						<v-btn
+							to="/finance"
+							variant="outlined"
+							prepend-icon="mdi-arrow-left"
+							size="large"
+						>
+							Voltar
+						</v-btn>
+					</div>
+				</div>
+			</v-col>
+		</v-row>
+
+		<!-- Filtros de Período -->
+		<v-row class="mb-6">
+			<v-col>
+				<v-card elevation="4">
+					<v-card-title class="d-flex align-center bg-grey-lighten-5">
+						<v-icon class="me-2" color="primary">mdi-calendar-range</v-icon>
+						Período do Relatório
+					</v-card-title>
+
+					<v-card-text class="pa-6">
+						<v-row class="mb-4">
+							<v-col cols="12" md="4">
+								<v-text-field
+									v-model="dateRange.startDate"
+									label="Data Inicial"
+									type="date"
+									variant="outlined"
+									density="comfortable"
+									prepend-inner-icon="mdi-calendar"
+								></v-text-field>
+							</v-col>
+
+							<v-col cols="12" md="4">
+								<v-text-field
+									v-model="dateRange.endDate"
+									label="Data Final"
+									type="date"
+									variant="outlined"
+									density="comfortable"
+									prepend-inner-icon="mdi-calendar"
+								></v-text-field>
+							</v-col>
+
+							<v-col cols="12" md="4" class="d-flex align-center">
+								<v-btn
+									@click="loadReport"
+									color="primary"
+									size="large"
+									prepend-icon="mdi-refresh"
+									block
+									style="margin-bottom: 24px"
+								>
+									Atualizar
+								</v-btn>
+							</v-col>
+						</v-row>
+
+						<div class="d-flex flex-wrap ga-2">
+							<v-btn @click="setPeriod('today')" size="small" variant="outlined"
+								>Hoje</v-btn
+							>
+							<v-btn @click="setPeriod('week')" size="small" variant="outlined"
+								>7 dias</v-btn
+							>
+							<v-btn @click="setPeriod('month')" size="small" variant="outlined"
+								>30 dias</v-btn
+							>
+							<v-btn
+								@click="setPeriod('quarter')"
+								size="small"
+								variant="outlined"
+								>3 meses</v-btn
+							>
+							<v-btn @click="setPeriod('year')" size="small" variant="outlined"
+								>1 ano</v-btn
+							>
+						</div>
+					</v-card-text>
+				</v-card>
+			</v-col>
+		</v-row>
+
+		<!-- Loading -->
+		<v-row v-if="isLoading" justify="center">
+			<v-col cols="auto" class="text-center">
+				<v-progress-circular
+					indeterminate
+					color="primary"
+					size="64"
+				></v-progress-circular>
+				<p class="mt-4 text-h6">Gerando relatório...</p>
+			</v-col>
+		</v-row>
+
+		<div v-else-if="financeStore.report">
+			<!-- Cards de Resumo -->
+			<v-row class="mb-6">
+				<v-col cols="12" sm="6" md="4">
+					<v-card color="success-lighten-4" elevation="4" height="120">
+						<v-card-text class="pa-4">
+							<div class="d-flex justify-space-between align-center">
+								<div>
+									<v-card-subtitle
+										class="text-success-darken-2 pa-0 text-caption"
+									>
+										Receitas
+									</v-card-subtitle>
+									<div class="text-h5 font-weight-bold text-black">
+										{{
+											formatCurrency(financeStore.report.balance.receitas || 0)
+										}}
+									</div>
+								</div>
+								<v-icon size="32" class="text-success-darken-1">
+									mdi-trending-up
+								</v-icon>
+							</div>
+						</v-card-text>
+					</v-card>
+				</v-col>
+
+				<v-col cols="12" sm="6" md="4">
+					<v-card color="error-lighten-4" elevation="4" height="120">
+						<v-card-text class="pa-4">
+							<div class="d-flex justify-space-between align-center">
+								<div>
+									<v-card-subtitle
+										class="text-error-darken-2 pa-0 text-caption"
+									>
+										Despesas
+									</v-card-subtitle>
+									<div class="text-h5 font-weight-bold text-black">
+										{{
+											formatCurrency(financeStore.report.balance.despesas || 0)
+										}}
+									</div>
+								</div>
+								<v-icon size="32" class="text-error-darken-1">
+									mdi-trending-down
+								</v-icon>
+							</div>
+						</v-card-text>
+					</v-card>
+				</v-col>
+
+				<v-col cols="12" sm="6" md="4">
+					<v-card
+						:color="
+							financeStore.report.balance.balance >= 0
+								? 'info-lighten-4'
+								: 'error-lighten-4'
+						"
+						elevation="4"
+						height="120"
+					>
+						<v-card-text class="pa-4">
+							<div class="d-flex justify-space-between align-center">
+								<div>
+									<v-card-subtitle
+										:class="
+											financeStore.report.balance.balance >= 0
+												? 'text-info-darken-2'
+												: 'text-error-darken-2'
+										"
+										class="pa-0 text-caption"
+									>
+										Saldo
+									</v-card-subtitle>
+									<div
+										class="text-h5 font-weight-bold"
+										:class="
+											financeStore.report.balance.balance >= 0
+												? 'text-success'
+												: 'text-error'
+										"
+									>
+										{{
+											formatCurrency(financeStore.report.balance.balance || 0)
+										}}
+									</div>
+								</div>
+								<v-icon
+									size="32"
+									:class="
+										financeStore.report.balance.balance >= 0
+											? 'text-info-darken-1'
+											: 'text-error-darken-1'
+									"
+								>
+									mdi-calculator
+								</v-icon>
+							</div>
+						</v-card-text>
+					</v-card>
+				</v-col>
+			</v-row>
+
+			<!-- Transações por Categoria -->
+			<v-row class="mb-6">
+				<v-col>
+					<v-card elevation="4">
+						<v-card-title class="d-flex align-center bg-grey-lighten-5">
+							<v-icon class="me-2" color="primary">mdi-chart-pie</v-icon>
+							Transações por Categoria
+						</v-card-title>
+
+						<v-card-text class="pa-0">
+							<v-data-table
+								:items="financeStore.report.categoryBreakdown || []"
+								:headers="[
+									{ title: 'Tipo', key: '_id.type', sortable: true },
+									{ title: 'Categoria', key: '_id.category', sortable: true },
+									{ title: 'Quantidade', key: 'count', sortable: true },
+									{ title: 'Total', key: 'total', sortable: true },
+								]"
+								class="elevation-0"
+								density="comfortable"
+							>
+								<template #item._id.type="{ item }">
+									<v-chip
+										:color="item._id.type === 'receita' ? 'success' : 'error'"
+										size="small"
+										variant="flat"
+									>
+										{{ item._id.type === "receita" ? "Receita" : "Despesa" }}
+									</v-chip>
+								</template>
+
+								<template #item._id.category="{ item }">
+									<v-chip size="small" variant="outlined">
+										{{ item._id.category }}
+									</v-chip>
+								</template>
+
+								<template #item.total="{ item }">
+									<span
+										class="font-weight-bold"
+										:class="
+											item._id.type === 'receita'
+												? 'text-success'
+												: 'text-error'
+										"
+									>
+										{{ formatCurrency(item.total) }}
+									</span>
+								</template>
+							</v-data-table>
+						</v-card-text>
+					</v-card>
+				</v-col>
+			</v-row>
+
+			<!-- Transações por Método de Pagamento -->
+			<v-row class="mb-6">
+				<v-col>
+					<v-card elevation="4">
+						<v-card-title class="d-flex align-center bg-grey-lighten-5">
+							<v-icon class="me-2" color="primary">mdi-credit-card</v-icon>
+							Transações por Método de Pagamento
+						</v-card-title>
+
+						<v-card-text class="pa-0">
+							<v-data-table
+								:items="financeStore.report.paymentMethodBreakdown || []"
+								:headers="[
+									{ title: 'Método de Pagamento', key: '_id', sortable: true },
+									{ title: 'Quantidade', key: 'count', sortable: true },
+									{ title: 'Total', key: 'total', sortable: true },
+								]"
+								class="elevation-0"
+								density="comfortable"
+							>
+								<template #item._id="{ item }">
+									<v-chip size="small" variant="outlined">
+										{{
+											item._id === "dinheiro"
+												? "Dinheiro"
+												: item._id === "cartao"
+												? "Cartão"
+												: item._id === "pix"
+												? "PIX"
+												: item._id === "transferencia"
+												? "Transferência"
+												: item._id === "boleto"
+												? "Boleto"
+												: item._id
+										}}
+									</v-chip>
+								</template>
+
+								<template #item.total="{ item }">
+									<span class="font-weight-bold">
+										{{ formatCurrency(item.total) }}
+									</span>
+								</template>
+							</v-data-table>
+						</v-card-text>
+					</v-card>
+				</v-col>
+			</v-row>
+		</div>
+
+		<!-- Sem dados -->
+		<v-row v-else justify="center">
+			<v-col cols="auto" class="text-center">
+				<v-card elevation="4" class="pa-8">
+					<v-icon size="64" color="grey-lighten-1"
+						>mdi-information-outline</v-icon
+					>
+					<p class="text-h6 mt-4 text-grey">
+						Nenhum dado disponível para o período selecionado
+					</p>
+				</v-card>
+			</v-col>
+		</v-row>
+
+		<!-- Dialog de Exportação -->
+		<v-dialog v-model="showExportDialog" max-width="400">
+			<v-card>
+				<v-card-title class="d-flex align-center">
+					<v-icon class="me-2" color="success">mdi-download</v-icon>
+					Exportar Relatório
+				</v-card-title>
+
+				<v-card-text>
+					<p class="mb-4">Escolha o formato para exportar o relatório:</p>
+					<div class="d-flex flex-column ga-3">
+						<v-btn
+							@click="exportReport('json')"
+							color="primary"
+							variant="outlined"
+							prepend-icon="mdi-code-json"
+							block
+						>
+							JSON
+						</v-btn>
+						<v-btn
+							@click="exportReport('csv')"
+							color="success"
+							variant="outlined"
+							prepend-icon="mdi-file-delimited"
+							block
+						>
+							CSV
+						</v-btn>
+					</div>
+				</v-card-text>
+
+				<v-card-actions>
+					<v-spacer></v-spacer>
+					<v-btn @click="showExportDialog = false" variant="text">
+						Cancelar
+					</v-btn>
+				</v-card-actions>
+			</v-card>
+		</v-dialog>
+	</v-container>
 </template>

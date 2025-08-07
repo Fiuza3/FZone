@@ -128,17 +128,29 @@ transactionSchema.statics.calculateProjection = async function(companyId, months
 transactionSchema.statics.calculateBalance = async function(startDate, endDate, companyId) {
   console.log('📊 Calculando balanço financeiro...');
   
+  const matchFilter = {
+    company: companyId,
+    status: 'pago'
+  };
+  
+  if (startDate || endDate) {
+    matchFilter.date = {};
+    if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      matchFilter.date.$gte = start;
+    }
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      matchFilter.date.$lte = end;
+    }
+  }
+  
+  console.log('🔍 Filtro de busca:', JSON.stringify(matchFilter, null, 2));
+  
   const pipeline = [
-    {
-      $match: {
-        company: companyId,
-        date: {
-          $gte: startDate || new Date('1900-01-01'),
-          $lte: endDate || new Date()
-        },
-        status: 'pago'
-      }
-    },
+    { $match: matchFilter },
     {
       $group: {
         _id: '$type',
