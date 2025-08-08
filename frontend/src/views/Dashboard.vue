@@ -90,21 +90,16 @@
 
 			console.log("✅ Dashboard avançado carregado com sucesso");
 			
-			// Inicializar notificações de exemplo
-			initializeExampleNotifications();
+			// Inicializar notificações se necessário
+			initializeIfEmpty();
 			
 			// Executar verificações com dados reais
 			generateRealNotifications();
 			
 			// Iniciar verificações periódicas
-			const stopPeriodicChecks = startPeriodicChecks();
+			startPeriodicChecks();
 			
 			showSuccess('Dashboard carregado com sucesso!');
-			
-			// Cleanup ao desmontar o componente
-			return () => {
-				stopPeriodicChecks();
-			};
 		} catch (error) {
 			console.error("❌ Erro ao carregar dashboard:", error);
 			showError('Erro ao carregar dados do dashboard');
@@ -516,17 +511,20 @@
 									<v-icon size="28">mdi-account-group</v-icon>
 								</v-avatar>
 							</div>
-							<div class="d-flex align-center mt-2">
-								<v-avatar-group size="24" max="3">
-									<v-avatar v-for="n in 3" :key="n" color="info">
+							<div class="d-flex align-center mt-2" v-if="hrStore.activeEmployees.length > 0">
+								<div class="d-flex">
+									<v-avatar v-for="n in Math.min(3, hrStore.activeEmployees.length)" :key="n" color="info" size="24" class="me-1">
 										<span class="text-caption">{{
-											String.fromCharCode(65 + n)
+											String.fromCharCode(65 + n - 1)
 										}}</span>
 									</v-avatar>
-								</v-avatar-group>
-								<span class="text-caption ms-2"
+								</div>
+								<span v-if="hrStore.activeEmployees.length > 3" class="text-caption ms-2"
 									>+{{ hrStore.activeEmployees.length - 3 }} mais</span
 								>
+							</div>
+							<div v-else class="text-caption mt-2 text-grey">
+								Carregando funcionários...
 							</div>
 						</v-card-text>
 						<v-card-actions>
