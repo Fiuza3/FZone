@@ -9,6 +9,29 @@
 	import { useEventStore } from "../stores/event";
 	import { useNotifications } from "../composables/useNotifications";
 	import { useAutomaticNotifications } from "../composables/useAutomaticNotifications";
+	import { Line, Doughnut } from "vue-chartjs";
+	import {
+		Chart as ChartJS,
+		CategoryScale,
+		LinearScale,
+		PointElement,
+		LineElement,
+		Title,
+		Tooltip,
+		Legend,
+		ArcElement,
+	} from "chart.js";
+
+	ChartJS.register(
+		CategoryScale,
+		LinearScale,
+		PointElement,
+		LineElement,
+		Title,
+		Tooltip,
+		Legend,
+		ArcElement
+	);
 
 	// Stores
 	const authStore = useAuthStore();
@@ -18,21 +41,19 @@
 	const hrStore = useHRStore();
 	const dashboardStore = useDashboardStore();
 	const eventStore = useEventStore();
-	
+
 	// Notificações
-	const { 
-		addNotification, 
-		showSuccess, 
-		showError, 
+	const {
+		addNotification,
+		showSuccess,
+		showError,
 		showWarning,
-		initializeIfEmpty
+		initializeIfEmpty,
 	} = useNotifications();
-	
+
 	// Notificações automáticas
-	const { 
-		startPeriodicChecks,
-		generateRealNotifications
-	} = useAutomaticNotifications();
+	const { startPeriodicChecks, generateRealNotifications } =
+		useAutomaticNotifications();
 
 	// Estado
 	const isLoading = ref(true);
@@ -69,7 +90,10 @@
 			// Carrega dados de estoque se tiver acesso
 			if (hasStockAccess.value) {
 				loadingMessage.value = "Carregando dados de estoque...";
-				await stockStore.fetchProducts({ lowStock: true });
+				await stockStore.fetchProducts();
+			} else {
+				// Carrega estoque para alertas mesmo sem acesso total
+				await stockStore.fetchProducts();
 			}
 
 			// Carrega dados financeiros se tiver acesso
@@ -89,20 +113,25 @@
 			await eventStore.fetchEvents();
 
 			console.log("✅ Dashboard avançado carregado com sucesso");
-			
+			console.log("📊 Dados do gráfico:", dashboardStore.revenueChart);
+			console.log(
+				"💰 Valores para sparkline:",
+				dashboardStore.revenueChart.map((m) => Number(m.revenue) || 0)
+			);
+
 			// Inicializar notificações se necessário
 			initializeIfEmpty();
-			
+
 			// Executar verificações com dados reais
 			generateRealNotifications();
-			
+
 			// Iniciar verificações periódicas
 			startPeriodicChecks();
-			
-			showSuccess('Dashboard carregado com sucesso!');
+
+			showSuccess("Dashboard carregado com sucesso!");
 		} catch (error) {
 			console.error("❌ Erro ao carregar dashboard:", error);
-			showError('Erro ao carregar dados do dashboard');
+			showError("Erro ao carregar dados do dashboard");
 		} finally {
 			isLoading.value = false;
 		}
@@ -119,10 +148,68 @@
 	// Eventos ordenados por data (mais próximo primeiro)
 	const sortedEvents = computed(() => {
 		const now = new Date();
+		const thirtyDaysFromNow = new Date(
+			now.getTime() + 30 * 24 * 60 * 60 * 1000
+		);
 		return eventStore.events
-			.filter(event => new Date(event.startDate) >= now && event.status !== 'cancelado')
+			.filter((event) => {
+				const eventDate = new Date(event.startDate);
+				return (
+					eventDate >= now &&
+					eventDate <= thirtyDaysFromNow &&
+					event.status !== "cancelado"
+				);
+			})
 			.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 	});
+
+	// Dados do gráfico de linha
+	const lineChartData = computed(() => ({
+		labels: dashboardStore.revenueChart.map((m) => m.month || ""),
+		datasets: [
+			{
+				label: "Receitas",
+				data: dashboardStore.revenueChart.map((m) => Number(m.revenue) || 0),
+				borderColor: "#4CAF50",
+				backgroundColor: "rgba(76, 175, 80, 0.1)",
+				tension: 0.4,
+				fill: true,
+			},
+		],
+	}));
+
+	// Dados do gráfico pizza por departamento
+	const pieChartData = computed(() => {
+		const deptCounts = hrStore.employees.reduce((acc, emp) => {
+			const dept = emp.department || "geral";
+			acc[dept] = (acc[dept] || 0) + 1;
+			return acc;
+		}, {});
+
+		return {
+			labels: Object.keys(deptCounts),
+			datasets: [
+				{
+					data: Object.values(deptCounts),
+					backgroundColor: [
+						"#FF6384",
+						"#36A2EB",
+						"#FFCE56",
+						"#4BC0C0",
+						"#9966FF",
+						"#FF9F40",
+						"#FF6384",
+					],
+				},
+			],
+		};
+	});
+
+	const chartOptions = {
+		responsive: true,
+		maintainAspectRatio: false,
+		plugins: { legend: { display: false } },
+	};
 
 	// Breadcrumbs
 	const breadcrumbs = [
@@ -134,7 +221,7 @@
 </script>
 
 <template>
-	<div>
+	<v-container fluid class="pa-6">
 		<!-- Tela de carregamento -->
 		<v-container v-if="isLoading" fluid fill-height>
 			<v-row justify="center" align="center">
@@ -171,121 +258,61 @@
 
 			<!-- Métricas Avançadas -->
 			<v-row v-if="dashboardStore.metrics" class="mb-6">
-				<!-- Total de Eventos -->
+				<!-- Próximos Eventos -->
 				<v-col cols="12" sm="6" lg="3">
-					<v-card color="primary-lighten-4" elevation="8">
+					<v-card color="primary" variant="tonal" elevation="4">
 						<v-card-text>
 							<div class="d-flex justify-space-between align-center">
 								<div>
-									<v-card-subtitle class="text-primary-darken-2 pa-0"
-										>Total de Eventos</v-card-subtitle
+									<v-card-subtitle class="text-primary pa-0"
+										>Próximos Eventos</v-card-subtitle
 									>
-									<div class="text-h3 font-weight-bold text-black">
-										{{ dashboardStore.metrics.events.total }}
+									<div class="text-h3 font-weight-bold">
+										{{ sortedEvents.length }}
 									</div>
-									<div class="text-caption mt-1 text-black">
-										{{ dashboardStore.metrics.events.thisMonth }} este mês
-									</div>
+									<div class="text-caption mt-1">Próximos 30 dias</div>
 								</div>
-								<v-icon size="48" class="text-primary-darken-1"
-									>mdi-calendar-multiple</v-icon
+								<v-icon size="48" class="text-primary"
+									>mdi-calendar-clock</v-icon
 								>
 							</div>
-							<v-sparkline
-								:value="[2, 5, 3, 8, 7, 12, 15]"
-								color="primary"
-								height="40"
-								class="mt-3"
-							></v-sparkline>
 						</v-card-text>
 					</v-card>
 				</v-col>
 
 				<!-- Receita Mensal -->
 				<v-col cols="12" sm="6" lg="3">
-					<v-card color="success-lighten-4" elevation="8">
+					<v-card color="success" variant="tonal" elevation="4">
 						<v-card-text>
 							<div class="d-flex justify-space-between align-center">
 								<div>
-									<v-card-subtitle class="text-success-darken-2 pa-0"
+									<v-card-subtitle class="text-success pa-0"
 										>Receita Mensal</v-card-subtitle
 									>
-									<div class="text-h3 font-weight-bold text-black">
+									<div class="text-h3 font-weight-bold">
 										{{
-											formatCurrency(dashboardStore.metrics.revenue.thisMonth)
+											formatCurrency(
+												eventStore.events.reduce((total, event) => {
+													const eventDate = new Date(
+														event.createdAt || event.startDate
+													);
+													const now = new Date();
+													const isThisMonth =
+														eventDate.getMonth() === now.getMonth() &&
+														eventDate.getFullYear() === now.getFullYear();
+													return isThisMonth
+														? total + (event.revenue || 0)
+														: total;
+												}, 0)
+											)
 										}}
 									</div>
-									<div class="text-caption mt-1 text-black">
+									<div class="text-caption mt-1">
 										<v-icon size="small" class="me-1">mdi-trending-up</v-icon>
-										{{ dashboardStore.monthlyGrowth }}% crescimento
+										Este mês
 									</div>
 								</div>
-								<v-icon size="48" class="text-success-darken-1"
-									>mdi-currency-usd</v-icon
-								>
-							</div>
-							<v-sparkline
-								:value="[10, 15, 12, 20, 18, 25, 30]"
-								color="success"
-								height="40"
-								class="mt-3"
-							></v-sparkline>
-						</v-card-text>
-					</v-card>
-				</v-col>
-
-				<!-- Próximos Eventos -->
-				<v-col cols="12" sm="6" lg="3">
-					<v-card color="info-lighten-4" elevation="8">
-						<v-card-text>
-							<div class="d-flex justify-space-between align-center">
-								<div>
-									<v-card-subtitle class="text-info-darken-2 pa-0"
-										>Próximos Eventos</v-card-subtitle
-									>
-									<div class="text-h3 font-weight-bold text-black">
-										{{ dashboardStore.metrics.events.upcoming }}
-									</div>
-									<div class="text-caption mt-1 text-black">Próximos 30 dias</div>
-								</div>
-								<v-icon size="48" class="text-info-darken-1"
-									>mdi-calendar-clock</v-icon
-								>
-							</div>
-							<v-progress-linear
-								:model-value="
-									(dashboardStore.metrics.events.upcoming / 20) * 100
-								"
-								color="info"
-								height="6"
-								rounded
-								class="mt-3"
-							></v-progress-linear>
-						</v-card-text>
-					</v-card>
-				</v-col>
-
-				<!-- Alertas -->
-				<v-col cols="12" sm="6" lg="3">
-					<v-card color="warning-lighten-4" elevation="8">
-						<v-card-text>
-							<div class="d-flex justify-space-between align-center">
-								<div>
-									<v-card-subtitle class="text-warning-darken-2 pa-0"
-										>Alertas</v-card-subtitle
-									>
-									<div class="text-h3 font-weight-bold text-black">
-										{{ dashboardStore.totalAlerts }}
-									</div>
-									<div class="text-caption mt-1 text-black">
-										{{ dashboardStore.metrics.alerts.lowStock }} estoque baixo
-									</div>
-								</div>
-								<v-badge :content="dashboardStore.totalAlerts" color="error">
-									<v-icon size="48" class="text-warning-darken-1"
-										>mdi-alert-circle</v-icon
-									>
-								</v-badge>
+								<v-icon size="48" class="text-success">mdi-currency-usd</v-icon>
 							</div>
 						</v-card-text>
 					</v-card>
@@ -302,7 +329,7 @@
 						{{ sortedEvents.length }} eventos
 					</v-chip>
 				</v-card-title>
-				
+
 				<v-card-text v-if="sortedEvents.length === 0">
 					<v-empty-state
 						icon="mdi-calendar-outline"
@@ -310,7 +337,7 @@
 						text="Todos os eventos foram concluídos ou não há eventos agendados"
 					></v-empty-state>
 				</v-card-text>
-				
+
 				<v-slide-group v-else show-arrows class="pa-4">
 					<v-slide-group-item v-for="event in sortedEvents" :key="event._id">
 						<v-card
@@ -319,41 +346,64 @@
 							height="200"
 							elevation="3"
 							hover
-							:color="event.status === 'confirmado' ? 'primary' : event.status === 'planejado' ? 'warning' : 'info'"
+							:color="
+								event.status === 'confirmado'
+									? 'primary'
+									: event.status === 'planejado'
+									? 'warning'
+									: 'info'
+							"
 							variant="tonal"
 						>
 							<v-card-title class="d-flex align-center">
 								<v-icon class="me-2">mdi-calendar</v-icon>
 								<span class="text-truncate">{{ event.title }}</span>
 							</v-card-title>
-							
+
 							<v-card-text>
 								<div class="d-flex align-center mb-2">
 									<v-icon size="small" class="me-1">mdi-clock</v-icon>
 									<span class="text-body-2">
-										{{ new Date(event.startDate).toLocaleDateString('pt-BR') }}
+										{{ new Date(event.startDate).toLocaleDateString("pt-BR") }}
 									</span>
 								</div>
-								
+
 								<div class="d-flex align-center mb-2" v-if="event.location">
 									<v-icon size="small" class="me-1">mdi-map-marker</v-icon>
-									<span class="text-body-2 text-truncate">{{ event.location }}</span>
+									<span class="text-body-2 text-truncate">{{
+										event.location
+									}}</span>
 								</div>
-								
+
 								<div class="d-flex align-center mb-2" v-if="event.guests">
 									<v-icon size="small" class="me-1">mdi-account-group</v-icon>
 									<span class="text-body-2">{{ event.guests }} convidados</span>
 								</div>
-								
+
 								<div class="d-flex justify-space-between align-center mt-3">
 									<v-chip
-										:color="event.status === 'confirmado' ? 'success' : event.status === 'planejado' ? 'warning' : 'info'"
+										:color="
+											event.status === 'confirmado'
+												? 'success'
+												: event.status === 'planejado'
+												? 'warning'
+												: 'info'
+										"
 										size="small"
 									>
-										{{ event.status === 'confirmado' ? 'Confirmado' : event.status === 'planejado' ? 'Planejado' : 'Em Andamento' }}
+										{{
+											event.status === "confirmado"
+												? "Confirmado"
+												: event.status === "planejado"
+												? "Planejado"
+												: "Em Andamento"
+										}}
 									</v-chip>
-									
-									<span class="text-success font-weight-bold" v-if="event.budget">
+
+									<span
+										class="text-success font-weight-bold"
+										v-if="event.budget"
+									>
 										{{ formatCurrency(event.budget) }}
 									</span>
 								</div>
@@ -361,10 +411,15 @@
 						</v-card>
 					</v-slide-group-item>
 				</v-slide-group>
-				
+
 				<v-card-actions>
 					<v-spacer></v-spacer>
-					<v-btn to="/events" variant="text" color="primary" append-icon="mdi-arrow-right">
+					<v-btn
+						to="/events"
+						variant="text"
+						color="primary"
+						append-icon="mdi-arrow-right"
+					>
 						Ver todos os eventos
 					</v-btn>
 				</v-card-actions>
@@ -511,15 +566,26 @@
 									<v-icon size="28">mdi-account-group</v-icon>
 								</v-avatar>
 							</div>
-							<div class="d-flex align-center mt-2" v-if="hrStore.activeEmployees.length > 0">
+							<div
+								class="d-flex align-center mt-2"
+								v-if="hrStore.activeEmployees.length > 0"
+							>
 								<div class="d-flex">
-									<v-avatar v-for="n in Math.min(3, hrStore.activeEmployees.length)" :key="n" color="info" size="24" class="me-1">
+									<v-avatar
+										v-for="n in Math.min(3, hrStore.activeEmployees.length)"
+										:key="n"
+										color="info"
+										size="24"
+										class="me-1"
+									>
 										<span class="text-caption">{{
 											String.fromCharCode(65 + n - 1)
 										}}</span>
 									</v-avatar>
 								</div>
-								<span v-if="hrStore.activeEmployees.length > 3" class="text-caption ms-2"
+								<span
+									v-if="hrStore.activeEmployees.length > 3"
+									class="text-caption ms-2"
 									>+{{ hrStore.activeEmployees.length - 3 }} mais</span
 								>
 							</div>
@@ -541,140 +607,43 @@
 				</v-col>
 			</v-row>
 
-			<!-- Gráfico de Receitas -->
-			<v-card
-				v-if="dashboardStore.revenueChart.length > 0"
-				class="mb-6"
-				elevation="4"
-			>
-				<v-card-title class="d-flex align-center">
-					<v-icon class="me-2" color="primary">mdi-chart-line</v-icon>
-					Receitas dos Últimos 12 Meses
-					<v-spacer></v-spacer>
-					<v-chip color="success" variant="tonal">
-						<v-icon start>mdi-trending-up</v-icon>
-						+{{ dashboardStore.monthlyGrowth }}%
-					</v-chip>
-				</v-card-title>
-				<v-card-text>
-					<v-sparkline
-						:value="
-							dashboardStore.revenueChart.slice(-12).map((m) => m.revenue)
-						"
-						:labels="dashboardStore.revenueChart.slice(-12).map((m) => m.month)"
-						color="primary"
-						line-width="3"
-						padding="16"
-						smooth="10"
-						stroke-linecap="round"
-						type="trend"
-						auto-draw
-						show-labels
-						label-size="3"
-						height="200"
-					></v-sparkline>
-				</v-card-text>
-			</v-card>
-
-			<!-- Eventos Próximos -->
-			<v-card
-				v-if="dashboardStore.upcomingEvents.length > 0"
-				class="mb-6"
-				elevation="4"
-			>
-				<v-card-title class="d-flex align-center">
-					<v-icon class="me-2" color="primary">mdi-calendar-multiple</v-icon>
-					Eventos Próximos
-					<v-spacer></v-spacer>
-					<v-badge
-						:content="dashboardStore.upcomingEvents.length"
-						color="primary"
-					>
-						<v-icon>mdi-calendar</v-icon>
-					</v-badge>
-				</v-card-title>
-				<v-card-text>
-					<v-timeline density="compact" side="end">
-						<v-timeline-item
-							v-for="event in dashboardStore.upcomingEvents.slice(0, 5)"
-							:key="event._id"
-							:dot-color="
-								event.status === 'planejado'
-									? 'warning'
-									: event.status === 'confirmado'
-									? 'primary'
-									: 'success'
-							"
-							size="small"
-						>
-							<template v-slot:opposite>
-								<div class="text-caption">
-									{{ new Date(event.startDate).toLocaleDateString("pt-BR") }}
-								</div>
-							</template>
-
-							<v-card
-								variant="tonal"
-								:color="
-									event.status === 'planejado'
-										? 'warning'
-										: event.status === 'confirmado'
-										? 'primary'
-										: 'success'
-								"
-							>
-								<v-card-text class="py-2">
-									<div class="d-flex justify-space-between align-center">
-										<div>
-											<div class="font-weight-medium">{{ event.title }}</div>
-											<div class="text-caption d-flex align-center mt-1">
-												<v-icon size="small" class="me-1"
-													>mdi-map-marker</v-icon
-												>
-												{{ event.location }}
-											</div>
-										</div>
-										<div class="text-right">
-											<v-chip
-												:color="
-													event.status === 'planejado'
-														? 'warning'
-														: event.status === 'confirmado'
-														? 'primary'
-														: 'success'
-												"
-												size="small"
-											>
-												{{
-													event.status === "planejado"
-														? "Planejado"
-														: event.status === "confirmado"
-														? "Confirmado"
-														: "Em Andamento"
-												}}
-											</v-chip>
-											<div class="text-success font-weight-bold mt-1">
-												{{ formatCurrency(event.revenue) }}
-											</div>
-										</div>
-									</div>
-								</v-card-text>
-							</v-card>
-						</v-timeline-item>
-					</v-timeline>
-				</v-card-text>
-				<v-card-actions>
-					<v-spacer></v-spacer>
-					<v-btn
-						to="/events"
-						variant="text"
-						color="primary"
-						append-icon="mdi-arrow-right"
-					>
-						Ver todos os eventos
-					</v-btn>
-				</v-card-actions>
-			</v-card>
+			<!-- Gráficos -->
+			<v-row class="mb-6">
+				<v-col cols="12" md="8">
+					<v-card elevation="4">
+						<v-card-title class="d-flex align-center">
+							<v-icon class="me-2" color="primary">mdi-chart-line</v-icon>
+							Receitas dos Últimos 12 Meses
+						</v-card-title>
+						<v-card-text>
+							<div style="height: 300px">
+								<Line
+									:data="lineChartData"
+									:options="chartOptions"
+									v-if="dashboardStore.revenueChart.length > 0"
+								/>
+							</div>
+						</v-card-text>
+					</v-card>
+				</v-col>
+				<v-col cols="12" md="4">
+					<v-card elevation="4">
+						<v-card-title class="d-flex align-center">
+							<v-icon class="me-2" color="primary">mdi-chart-pie</v-icon>
+							Funcionários por Área
+						</v-card-title>
+						<v-card-text>
+							<div style="height: 300px">
+								<Doughnut
+									:data="pieChartData"
+									:options="chartOptions"
+									v-if="hrStore.employees.length > 0"
+								/>
+							</div>
+						</v-card-text>
+					</v-card>
+				</v-col>
+			</v-row>
 
 			<!-- Tarefas recentes -->
 			<v-card class="mb-6" elevation="4">
@@ -768,5 +737,5 @@
 				</v-card-actions>
 			</v-card>
 		</div>
-	</div>
+	</v-container>
 </template>

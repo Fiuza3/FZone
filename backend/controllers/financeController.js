@@ -176,7 +176,7 @@ const getFinancialReport = async (req, res) => {
   
   try {
     const { startDate, endDate } = req.query;
-    const start = startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 30 dias atrás
+    const start = startDate ? new Date(startDate) : new Date(new Date().getFullYear(), 0, 1); // Início do ano
     const end = endDate ? new Date(endDate) : new Date();
     
     // Balanço geral

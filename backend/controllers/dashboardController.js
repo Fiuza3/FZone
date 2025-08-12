@@ -96,22 +96,24 @@ const getRevenueChart = async (req, res) => {
     const now = new Date();
     const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
 
-    // Busca receitas por mês (Linhas 92-110)
-    const revenueByMonth = await Event.aggregate([
+    // Busca receitas por mês das transações
+    const revenueByMonth = await Transaction.aggregate([
       {
         $match: {
           company: companyId,
-          createdAt: { $gte: twelveMonthsAgo }
+          type: 'receita',
+          status: 'pago',
+          date: { $gte: twelveMonthsAgo }
         }
       },
       {
         $group: {
           _id: {
-            year: { $year: '$createdAt' },
-            month: { $month: '$createdAt' }
+            year: { $year: '$date' },
+            month: { $month: '$date' }
           },
-          revenue: { $sum: '$revenue' },
-          events: { $sum: 1 }
+          revenue: { $sum: '$amount' },
+          count: { $sum: 1 }
         }
       },
       {
@@ -119,11 +121,11 @@ const getRevenueChart = async (req, res) => {
       }
     ]);
 
-    // Formata dados para o gráfico (Linhas 112-118)
+    // Formata dados para o gráfico
     const chartData = revenueByMonth.map(item => ({
       month: `${item._id.month}/${item._id.year}`,
       revenue: item.revenue,
-      events: item.events
+      transactions: item.count
     }));
 
     res.json(chartData);

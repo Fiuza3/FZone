@@ -179,310 +179,357 @@ const cancelForm = () => {
 </script>
 
 <template>
-  <div>
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="page-title">{{ isEditing ? 'Editar Funcionário' : 'Novo Funcionário' }}</h1>
-    </div>
+  <v-container fluid class="pa-6">
+    <!-- Header -->
+    <v-row class="mb-6">
+      <v-col>
+        <div class="d-flex justify-space-between align-center mb-4">
+          <div>
+            <h1 class="text-h4 font-weight-bold mb-2">{{ isEditing ? 'Editar Funcionário' : 'Novo Funcionário' }}</h1>
+          </div>
+          <v-btn
+            @click="cancelForm"
+            variant="outlined"
+            prepend-icon="mdi-arrow-left"
+            size="large"
+          >
+            Voltar
+          </v-btn>
+        </div>
+      </v-col>
+    </v-row>
     
     <!-- Formulário -->
-    <div class="card">
-      <!-- Carregando -->
-      <div v-if="isLoading" class="flex justify-center py-8">
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600"></div>
-      </div>
+    <v-card elevation="4">
+      <!-- Loading -->
+      <v-row v-if="isLoading" justify="center" class="pa-8">
+        <v-col cols="auto" class="text-center">
+          <v-progress-circular
+            indeterminate
+            color="primary"
+            size="64"
+          ></v-progress-circular>
+          <p class="mt-4 text-h6">Carregando dados...</p>
+        </v-col>
+      </v-row>
       
       <!-- Formulário -->
-      <form v-else @submit.prevent="saveEmployee" class="space-y-6">
-        <!-- Mensagem de erro -->
-        <div v-if="errorMessage" class="bg-red-50 border-l-4 border-red-500 p-4">
-          <div class="flex">
-            <div class="flex-shrink-0">
-              <span class="material-icons text-red-500">error</span>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm text-red-700">{{ errorMessage }}</p>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Informações básicas -->
-        <div>
-          <h2 class="text-lg font-medium text-gray-900 mb-4">Informações Básicas</h2>
+      <v-form v-else @submit.prevent="saveEmployee">
+        <v-card-text>
+          <!-- Mensagem de erro -->
+          <v-alert
+            v-if="errorMessage"
+            type="error"
+            variant="tonal"
+            class="mb-6"
+            closable
+            @click:close="errorMessage = ''"
+          >
+            {{ errorMessage }}
+          </v-alert>
           
-          <!-- Nome -->
-          <div class="mb-4">
-            <label for="name" class="form-label">Nome completo <span class="text-red-500">*</span></label>
-            <input
-              id="name"
-              v-model="employee.name"
-              type="text"
-              required
-              class="form-input"
-              placeholder="Nome completo do funcionário"
-            />
-          </div>
-          
-          <!-- Email e Telefone -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label for="email" class="form-label">Email <span class="text-red-500">*</span></label>
-              <input
-                id="email"
-                v-model="employee.email"
-                type="email"
+          <!-- Informações básicas -->
+          <v-card class="mb-6" variant="outlined">
+            <v-card-title class="d-flex align-center bg-grey-lighten-5">
+              <v-icon class="me-2" color="primary">mdi-account</v-icon>
+              Informações Básicas
+            </v-card-title>
+            
+            <v-card-text>
+              <!-- Nome -->
+              <v-text-field
+                v-model="employee.name"
+                label="Nome completo"
+                variant="outlined"
+                density="compact"
                 required
-                class="form-input"
-                placeholder="email@exemplo.com"
-              />
-            </div>
-            
-            <div>
-              <label for="phone" class="form-label">Telefone <span class="text-red-500">*</span></label>
-              <input
-                id="phone"
-                v-model="employee.phone"
-                type="tel"
-                required
-                class="form-input"
-                placeholder="(00) 00000-0000"
-              />
-            </div>
-          </div>
+                class="mb-4"
+                prepend-inner-icon="mdi-account"
+                placeholder="Nome completo do funcionário"
+              ></v-text-field>
+              
+              <!-- Email e Telefone -->
+              <v-row class="mb-4">
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="employee.email"
+                    label="Email"
+                    type="email"
+                    variant="outlined"
+                    density="compact"
+                    required
+                    prepend-inner-icon="mdi-email"
+                    placeholder="email@exemplo.com"
+                  ></v-text-field>
+                </v-col>
+                
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="employee.phone"
+                    label="Telefone"
+                    type="tel"
+                    variant="outlined"
+                    density="compact"
+                    required
+                    prepend-inner-icon="mdi-phone"
+                    placeholder="(00) 00000-0000"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+              
+              <!-- Cargo, Departamento e Status -->
+              <v-row>
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model="employee.position"
+                    label="Cargo"
+                    variant="outlined"
+                    density="compact"
+                    required
+                    prepend-inner-icon="mdi-briefcase"
+                    placeholder="Cargo do funcionário"
+                  ></v-text-field>
+                </v-col>
+                
+                <v-col cols="12" md="4">
+                  <v-select
+                    v-model="employee.department"
+                    :items="departmentOptions"
+                    item-title="label"
+                    item-value="value"
+                    label="Departamento"
+                    variant="outlined"
+                    density="compact"
+                    prepend-inner-icon="mdi-domain"
+                  ></v-select>
+                </v-col>
+                
+                <v-col cols="12" md="4">
+                  <v-select
+                    v-model="employee.status"
+                    :items="statusOptions"
+                    item-title="label"
+                    item-value="value"
+                    label="Status"
+                    variant="outlined"
+                    density="compact"
+                    prepend-inner-icon="mdi-account-check"
+                  ></v-select>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
           
-          <!-- Cargo, Departamento e Status -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label for="position" class="form-label">Cargo <span class="text-red-500">*</span></label>
-              <input
-                id="position"
-                v-model="employee.position"
-                type="text"
-                required
-                class="form-input"
-                placeholder="Cargo do funcionário"
-              />
-            </div>
+          <!-- Informações de contratação -->
+          <v-card class="mb-6" variant="outlined">
+            <v-card-title class="d-flex align-center bg-grey-lighten-5">
+              <v-icon class="me-2" color="primary">mdi-calendar-account</v-icon>
+              Informações de Contratação
+            </v-card-title>
             
-            <div>
-              <label for="department" class="form-label">Departamento</label>
-              <select
-                id="department"
-                v-model="employee.department"
-                class="form-input"
-              >
-                <option v-for="option in departmentOptions" :key="option.value" :value="option.value">
-                  {{ option.label }}
-                </option>
-              </select>
-            </div>
-            
-            <div>
-              <label for="status" class="form-label">Status</label>
-              <select
-                id="status"
-                v-model="employee.status"
-                class="form-input"
-              >
-                <option v-for="option in statusOptions" :key="option.value" :value="option.value">
-                  {{ option.label }}
-                </option>
-              </select>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Informações de contratação -->
-        <div>
-          <h2 class="text-lg font-medium text-gray-900 mb-4">Informações de Contratação</h2>
+            <v-card-text>
+              <v-row>
+                <!-- Data de contratação -->
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="employee.hireDate"
+                    label="Data de contratação"
+                    type="date"
+                    variant="outlined"
+                    density="compact"
+                    required
+                    prepend-inner-icon="mdi-calendar"
+                  ></v-text-field>
+                </v-col>
+                
+                <!-- Salário -->
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model.number="employee.salary"
+                    label="Salário"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    variant="outlined"
+                    density="compact"
+                    required
+                    prepend-inner-icon="mdi-currency-usd"
+                    prefix="R$"
+                    placeholder="0.00"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
           
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Data de contratação -->
-            <div>
-              <label for="hire-date" class="form-label">Data de contratação <span class="text-red-500">*</span></label>
-              <input
-                id="hire-date"
-                v-model="employee.hireDate"
-                type="date"
-                required
-                class="form-input"
-              />
-            </div>
+          <!-- Documentos -->
+          <v-card class="mb-6" variant="outlined">
+            <v-card-title class="d-flex align-center bg-grey-lighten-5">
+              <v-icon class="me-2" color="primary">mdi-card-account-details</v-icon>
+              Documentos
+            </v-card-title>
             
-            <!-- Salário -->
-            <div>
-              <label for="salary" class="form-label">Salário <span class="text-red-500">*</span></label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span class="text-gray-500">R$</span>
-                </div>
-                <input
-                  id="salary"
-                  v-model.number="employee.salary"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  required
-                  class="form-input pl-10"
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Documentos -->
-        <div>
-          <h2 class="text-lg font-medium text-gray-900 mb-4">Documentos</h2>
+            <v-card-text>
+              <v-row>
+                <!-- CPF -->
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    :model-value="employee.documents.cpf"
+                    @input="updateCPF"
+                    label="CPF"
+                    variant="outlined"
+                    density="compact"
+                    required
+                    prepend-inner-icon="mdi-card-account-details"
+                    placeholder="000.000.000-00"
+                  ></v-text-field>
+                </v-col>
+                
+                <!-- RG -->
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="employee.documents.rg"
+                    label="RG"
+                    variant="outlined"
+                    density="compact"
+                    prepend-inner-icon="mdi-card-account-details-outline"
+                    placeholder="00.000.000-0"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
           
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- CPF -->
-            <div>
-              <label for="cpf" class="form-label">CPF <span class="text-red-500">*</span></label>
-              <input
-                id="cpf"
-                :value="employee.documents.cpf"
-                @input="updateCPF"
-                type="text"
-                required
-                class="form-input"
-                placeholder="000.000.000-00"
-              />
-            </div>
+          <!-- Endereço -->
+          <v-card class="mb-6" variant="outlined">
+            <v-card-title class="d-flex align-center bg-grey-lighten-5">
+              <v-icon class="me-2" color="primary">mdi-map-marker</v-icon>
+              Endereço
+            </v-card-title>
             
-            <!-- RG -->
-            <div>
-              <label for="rg" class="form-label">RG</label>
-              <input
-                id="rg"
-                v-model="employee.documents.rg"
-                type="text"
-                class="form-input"
-                placeholder="00.000.000-0"
-              />
-            </div>
-          </div>
-        </div>
-        
-        <!-- Endereço -->
-        <div>
-          <h2 class="text-lg font-medium text-gray-900 mb-4">Endereço</h2>
+            <v-card-text>
+              <!-- Rua -->
+              <v-text-field
+                v-model="employee.address.street"
+                label="Rua"
+                variant="outlined"
+                density="compact"
+                class="mb-4"
+                prepend-inner-icon="mdi-road"
+                placeholder="Rua, número e complemento"
+              ></v-text-field>
+              
+              <!-- Cidade, Estado e CEP -->
+              <v-row>
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model="employee.address.city"
+                    label="Cidade"
+                    variant="outlined"
+                    density="compact"
+                    prepend-inner-icon="mdi-city"
+                    placeholder="Cidade"
+                  ></v-text-field>
+                </v-col>
+                
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model="employee.address.state"
+                    label="Estado"
+                    variant="outlined"
+                    density="compact"
+                    prepend-inner-icon="mdi-map"
+                    placeholder="Estado"
+                  ></v-text-field>
+                </v-col>
+                
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model="employee.address.zipCode"
+                    label="CEP"
+                    variant="outlined"
+                    density="compact"
+                    prepend-inner-icon="mdi-mailbox"
+                    placeholder="00000-000"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
           
-          <!-- Rua -->
-          <div class="mb-4">
-            <label for="street" class="form-label">Rua</label>
-            <input
-              id="street"
-              v-model="employee.address.street"
-              type="text"
-              class="form-input"
-              placeholder="Rua, número e complemento"
-            />
-          </div>
-          
-          <!-- Cidade, Estado e CEP -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label for="city" class="form-label">Cidade</label>
-              <input
-                id="city"
-                v-model="employee.address.city"
-                type="text"
-                class="form-input"
-                placeholder="Cidade"
-              />
-            </div>
+          <!-- Contato de emergência -->
+          <v-card class="mb-6" variant="outlined">
+            <v-card-title class="d-flex align-center bg-grey-lighten-5">
+              <v-icon class="me-2" color="primary">mdi-phone-alert</v-icon>
+              Contato de Emergência
+            </v-card-title>
             
-            <div>
-              <label for="state" class="form-label">Estado</label>
-              <input
-                id="state"
-                v-model="employee.address.state"
-                type="text"
-                class="form-input"
-                placeholder="Estado"
-              />
-            </div>
-            
-            <div>
-              <label for="zip-code" class="form-label">CEP</label>
-              <input
-                id="zip-code"
-                v-model="employee.address.zipCode"
-                type="text"
-                class="form-input"
-                placeholder="00000-000"
-              />
-            </div>
-          </div>
-        </div>
-        
-        <!-- Contato de emergência -->
-        <div>
-          <h2 class="text-lg font-medium text-gray-900 mb-4">Contato de Emergência</h2>
-          
-          <!-- Nome -->
-          <div class="mb-4">
-            <label for="emergency-name" class="form-label">Nome</label>
-            <input
-              id="emergency-name"
-              v-model="employee.emergencyContact.name"
-              type="text"
-              class="form-input"
-              placeholder="Nome do contato de emergência"
-            />
-          </div>
-          
-          <!-- Telefone e Relacionamento -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label for="emergency-phone" class="form-label">Telefone</label>
-              <input
-                id="emergency-phone"
-                v-model="employee.emergencyContact.phone"
-                type="tel"
-                class="form-input"
-                placeholder="(00) 00000-0000"
-              />
-            </div>
-            
-            <div>
-              <label for="emergency-relationship" class="form-label">Relacionamento</label>
-              <select
-                id="emergency-relationship"
-                v-model="employee.emergencyContact.relationship"
-                class="form-input"
-              >
-                <option value="">Selecione...</option>
-                <option v-for="option in relationshipOptions" :key="option.value" :value="option.value">
-                  {{ option.label }}
-                </option>
-              </select>
-            </div>
-          </div>
-        </div>
+            <v-card-text>
+              <!-- Nome -->
+              <v-text-field
+                v-model="employee.emergencyContact.name"
+                label="Nome"
+                variant="outlined"
+                density="compact"
+                class="mb-4"
+                prepend-inner-icon="mdi-account-outline"
+                placeholder="Nome do contato de emergência"
+              ></v-text-field>
+              
+              <!-- Telefone e Relacionamento -->
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="employee.emergencyContact.phone"
+                    label="Telefone"
+                    type="tel"
+                    variant="outlined"
+                    density="compact"
+                    prepend-inner-icon="mdi-phone"
+                    placeholder="(00) 00000-0000"
+                  ></v-text-field>
+                </v-col>
+                
+                <v-col cols="12" md="6">
+                  <v-select
+                    v-model="employee.emergencyContact.relationship"
+                    :items="relationshipOptions"
+                    item-title="label"
+                    item-value="value"
+                    label="Relacionamento"
+                    variant="outlined"
+                    density="compact"
+                    prepend-inner-icon="mdi-account-heart"
+                    placeholder="Selecione..."
+                  ></v-select>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
+        </v-card-text>
         
         <!-- Botões de ação -->
-        <div class="flex justify-end space-x-3">
-          <button
-            type="button"
+        <v-card-actions class="pa-6">
+          <v-spacer></v-spacer>
+          <v-btn
             @click="cancelForm"
-            class="btn btn-outline"
+            variant="outlined"
+            size="large"
+            class="me-3"
           >
             Cancelar
-          </button>
+          </v-btn>
           
-          <button
+          <v-btn
             type="submit"
-            :disabled="isLoading"
-            class="btn btn-primary"
+            :loading="isLoading"
+            color="primary"
+            size="large"
           >
-            <span v-if="isLoading" class="animate-spin mr-2">
-              <span class="material-icons text-sm">refresh</span>
-            </span>
             {{ isEditing ? 'Atualizar' : 'Cadastrar' }} Funcionário
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
+          </v-btn>
+        </v-card-actions>
+      </v-form>
+    </v-card>
+  </v-container>
 </template>

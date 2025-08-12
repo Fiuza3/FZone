@@ -10,7 +10,7 @@ const transactionSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['vendas', 'compras', 'salarios', 'aluguel', 'marketing', 'manutencao', 'outros']
+    enum: ['vendas', 'compras', 'salarios', 'aluguel', 'marketing', 'manutencao', 'operacional', 'outros']
   },
   description: {
     type: String,

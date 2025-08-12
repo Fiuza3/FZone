@@ -7,13 +7,13 @@ const activeCategory = ref('getting-started');
 
 // Categorias de ajuda
 const categories = [
-  { id: 'getting-started', name: 'Primeiros Passos', icon: 'rocket_launch' },
-  { id: 'tasks', name: 'Tarefas', icon: 'task' },
-  { id: 'stock', name: 'Estoque', icon: 'inventory' },
-  { id: 'finance', name: 'Financeiro', icon: 'payments' },
-  { id: 'hr', name: 'RH', icon: 'people' },
-  { id: 'account', name: 'Conta e Perfil', icon: 'person' },
-  { id: 'faq', name: 'Perguntas Frequentes', icon: 'help' }
+  { id: 'getting-started', name: 'Primeiros Passos', icon: 'rocket-launch' },
+  { id: 'tasks', name: 'Tarefas', icon: 'clipboard-check' },
+  { id: 'stock', name: 'Estoque', icon: 'package-variant' },
+  { id: 'finance', name: 'Financeiro', icon: 'currency-usd' },
+  { id: 'hr', name: 'RH', icon: 'account-group' },
+  { id: 'account', name: 'Conta e Perfil', icon: 'account' },
+  { id: 'faq', name: 'Perguntas Frequentes', icon: 'help-circle' }
 ];
 
 // Perguntas frequentes
@@ -88,137 +88,165 @@ const setActiveCategory = (categoryId) => {
 </script>
 
 <template>
-  <div>
-    <h1 class="page-title">Central de Ajuda</h1>
+  <v-container fluid class="pa-6">
+    <!-- Header -->
+    <v-row class="mb-6">
+      <v-col>
+        <h1 class="text-h4 font-weight-bold mb-2">Central de Ajuda</h1>
+      </v-col>
+    </v-row>
     
     <!-- Pesquisa -->
-    <div class="card mb-6">
-      <div class="relative">
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <span class="material-icons text-gray-400">search</span>
-        </div>
-        <input
+    <v-card class="mb-6" elevation="4">
+      <v-card-text>
+        <v-text-field
           v-model="searchQuery"
-          type="text"
-          class="form-input pl-10"
+          label="Pesquisar na ajuda"
+          variant="outlined"
+          density="compact"
+          prepend-inner-icon="mdi-magnify"
           placeholder="Pesquisar na ajuda..."
-        />
-      </div>
-    </div>
+          clearable
+        ></v-text-field>
+      </v-card-text>
+    </v-card>
     
     <!-- Conteúdo principal -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <v-row>
       <!-- Categorias -->
-      <div class="md:col-span-1">
-        <div class="card">
-          <h2 class="text-lg font-semibold mb-4">Categorias</h2>
+      <v-col cols="12" md="3">
+        <v-card elevation="4">
+          <v-card-title class="d-flex align-center bg-grey-lighten-5">
+            <v-icon class="me-2" color="primary">mdi-format-list-bulleted</v-icon>
+            Categorias
+          </v-card-title>
           
-          <nav class="space-y-1">
-            <button
+          <v-list density="compact">
+            <v-list-item
               v-for="category in categories"
               :key="category.id"
               @click="setActiveCategory(category.id)"
-              :class="[
-                'w-full flex items-center px-3 py-2 text-sm rounded-md',
-                activeCategory === category.id
-                  ? 'bg-primary-50 text-primary-700'
-                  : 'text-gray-700 hover:bg-gray-100'
-              ]"
-            >
-              <span class="material-icons mr-3 text-lg">{{ category.icon }}</span>
-              <span>{{ category.name }}</span>
-            </button>
-          </nav>
-        </div>
-      </div>
+              :active="activeCategory === category.id"
+              :prepend-icon="`mdi-${category.icon.replace('_', '-')}`"
+              :title="category.name"
+              class="cursor-pointer"
+            ></v-list-item>
+          </v-list>
+        </v-card>
+      </v-col>
       
       <!-- Conteúdo da ajuda -->
-      <div class="md:col-span-3">
-        <div class="card">
-          <h2 class="section-title">
+      <v-col cols="12" md="9">
+        <v-card elevation="4">
+          <v-card-title class="d-flex align-center bg-grey-lighten-5">
+            <v-icon class="me-2" color="primary">mdi-help-circle</v-icon>
             {{ categories.find(c => c.id === activeCategory)?.name || 'Ajuda' }}
-          </h2>
+          </v-card-title>
           
-          <!-- Conteúdo específico da categoria -->
-          <div v-if="activeCategory === 'getting-started'" class="mb-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-2">Bem-vindo ao ERP System</h3>
-            <p class="text-gray-600 mb-4">
-              Este guia irá ajudá-lo a começar a usar nosso sistema ERP. Siga os passos abaixo para configurar sua conta e começar a usar o sistema.
-            </p>
+          <v-card-text>
+            <!-- Conteúdo específico da categoria -->
+            <div v-if="activeCategory === 'getting-started'" class="mb-6">
+              <h3 class="text-h6 font-weight-medium mb-4">Bem-vindo ao ERP System</h3>
+              <p class="text-body-1 mb-6">
+                Este guia irá ajudá-lo a começar a usar nosso sistema ERP. Siga os passos abaixo para configurar sua conta e começar a usar o sistema.
+              </p>
+              
+              <v-timeline density="compact" side="end">
+                <v-timeline-item
+                  dot-color="primary"
+                  size="small"
+                >
+                  <template v-slot:opposite>
+                    <div class="text-caption">Passo 1</div>
+                  </template>
+                  
+                  <v-card variant="tonal" color="primary">
+                    <v-card-text class="py-2">
+                      <h4 class="text-body-1 font-weight-medium mb-1">Faça login no sistema</h4>
+                      <p class="text-body-2">
+                        Use suas credenciais para acessar o sistema. Se você não tem uma conta, entre em contato com o administrador.
+                      </p>
+                    </v-card-text>
+                  </v-card>
+                </v-timeline-item>
+                
+                <v-timeline-item
+                  dot-color="primary"
+                  size="small"
+                >
+                  <template v-slot:opposite>
+                    <div class="text-caption">Passo 2</div>
+                  </template>
+                  
+                  <v-card variant="tonal" color="primary">
+                    <v-card-text class="py-2">
+                      <h4 class="text-body-1 font-weight-medium mb-1">Explore o Dashboard</h4>
+                      <p class="text-body-2">
+                        O Dashboard fornece uma visão geral do sistema com informações importantes e acesso rápido aos módulos.
+                      </p>
+                    </v-card-text>
+                  </v-card>
+                </v-timeline-item>
+                
+                <v-timeline-item
+                  dot-color="primary"
+                  size="small"
+                >
+                  <template v-slot:opposite>
+                    <div class="text-caption">Passo 3</div>
+                  </template>
+                  
+                  <v-card variant="tonal" color="primary">
+                    <v-card-text class="py-2">
+                      <h4 class="text-body-1 font-weight-medium mb-1">Acesse os módulos</h4>
+                      <p class="text-body-2">
+                        Use o menu lateral para acessar os diferentes módulos do sistema: Tarefas, Estoque, Financeiro e RH.
+                      </p>
+                    </v-card-text>
+                  </v-card>
+                </v-timeline-item>
+                
+                <v-timeline-item
+                  dot-color="primary"
+                  size="small"
+                >
+                  <template v-slot:opposite>
+                    <div class="text-caption">Passo 4</div>
+                  </template>
+                  
+                  <v-card variant="tonal" color="primary">
+                    <v-card-text class="py-2">
+                      <h4 class="text-body-1 font-weight-medium mb-1">Personalize seu perfil</h4>
+                      <p class="text-body-2">
+                        Acesse seu perfil para atualizar suas informações pessoais e preferências.
+                      </p>
+                    </v-card-text>
+                  </v-card>
+                </v-timeline-item>
+              </v-timeline>
+            </div>
             
-            <div class="space-y-4 mt-6">
-              <div class="flex">
-                <div class="flex-shrink-0">
-                  <div class="flex items-center justify-center h-8 w-8 rounded-full bg-primary-100 text-primary-600">
-                    1
-                  </div>
-                </div>
-                <div class="ml-4">
-                  <h4 class="text-base font-medium text-gray-900">Faça login no sistema</h4>
-                  <p class="text-sm text-gray-500">
-                    Use suas credenciais para acessar o sistema. Se você não tem uma conta, entre em contato com o administrador.
-                  </p>
-                </div>
-              </div>
+            <!-- FAQs -->
+            <div>
+              <v-empty-state
+                v-if="filteredFaqs.length === 0"
+                icon="mdi-magnify-close"
+                title="Nenhum resultado encontrado"
+                text="Tente usar termos diferentes na pesquisa"
+              ></v-empty-state>
               
-              <div class="flex">
-                <div class="flex-shrink-0">
-                  <div class="flex items-center justify-center h-8 w-8 rounded-full bg-primary-100 text-primary-600">
-                    2
-                  </div>
-                </div>
-                <div class="ml-4">
-                  <h4 class="text-base font-medium text-gray-900">Explore o Dashboard</h4>
-                  <p class="text-sm text-gray-500">
-                    O Dashboard fornece uma visão geral do sistema com informações importantes e acesso rápido aos módulos.
-                  </p>
-                </div>
-              </div>
-              
-              <div class="flex">
-                <div class="flex-shrink-0">
-                  <div class="flex items-center justify-center h-8 w-8 rounded-full bg-primary-100 text-primary-600">
-                    3
-                  </div>
-                </div>
-                <div class="ml-4">
-                  <h4 class="text-base font-medium text-gray-900">Acesse os módulos</h4>
-                  <p class="text-sm text-gray-500">
-                    Use o menu lateral para acessar os diferentes módulos do sistema: Tarefas, Estoque, Financeiro e RH.
-                  </p>
-                </div>
-              </div>
-              
-              <div class="flex">
-                <div class="flex-shrink-0">
-                  <div class="flex items-center justify-center h-8 w-8 rounded-full bg-primary-100 text-primary-600">
-                    4
-                  </div>
-                </div>
-                <div class="ml-4">
-                  <h4 class="text-base font-medium text-gray-900">Personalize seu perfil</h4>
-                  <p class="text-sm text-gray-500">
-                    Acesse seu perfil para atualizar suas informações pessoais e preferências.
-                  </p>
-                </div>
-              </div>
+              <v-expansion-panels v-else variant="accordion">
+                <v-expansion-panel
+                  v-for="(faq, index) in filteredFaqs"
+                  :key="index"
+                  :title="faq.question"
+                  :text="faq.answer"
+                ></v-expansion-panel>
+              </v-expansion-panels>
             </div>
-          </div>
-          
-          <!-- FAQs -->
-          <div class="space-y-6">
-            <div v-if="filteredFaqs.length === 0" class="text-center py-8">
-              <span class="material-icons text-4xl text-gray-400">search_off</span>
-              <p class="text-gray-500 mt-2">Nenhum resultado encontrado</p>
-            </div>
-            
-            <div v-for="(faq, index) in filteredFaqs" :key="index" class="border-b border-gray-200 pb-6 last:border-0 last:pb-0">
-              <h3 class="text-lg font-medium text-gray-900 mb-2">{{ faq.question }}</h3>
-              <p class="text-gray-600">{{ faq.answer }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>

@@ -139,198 +139,243 @@ const getDepartmentLabel = (department) => {
 </script>
 
 <template>
-  <div>
-    <h1 class="page-title">Meu Perfil</h1>
+  <v-container fluid class="pa-6">
+    <!-- Header -->
+    <v-row class="mb-6">
+      <v-col>
+        <h1 class="text-h4 font-weight-bold mb-2">Meu Perfil</h1>
+      </v-col>
+    </v-row>
     
-    <!-- Carregando -->
-    <div v-if="isLoading" class="flex justify-center py-8">
-      <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600"></div>
-    </div>
+    <!-- Loading -->
+    <v-row v-if="isLoading" justify="center">
+      <v-col cols="auto" class="text-center">
+        <v-progress-circular
+          indeterminate
+          color="primary"
+          size="64"
+        ></v-progress-circular>
+        <p class="mt-4 text-h6">Carregando perfil...</p>
+      </v-col>
+    </v-row>
     
     <!-- Perfil -->
-    <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <v-row v-else>
       <!-- Informações do perfil -->
-      <div class="md:col-span-2">
-        <div class="card">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="section-title mb-0">Informações Pessoais</h2>
+      <v-col cols="12" md="8">
+        <v-card elevation="4">
+          <v-card-title class="d-flex justify-space-between align-center">
+            <div class="d-flex align-center">
+              <v-icon class="me-2" color="primary">mdi-account</v-icon>
+              Informações Pessoais
+            </div>
             
-            <div v-if="!isEditing">
-              <button @click="enableEditing" class="btn btn-outline flex items-center">
-                <span class="material-icons mr-1">edit</span>
-                Editar
-              </button>
-            </div>
-          </div>
+            <v-btn
+              v-if="!isEditing"
+              @click="enableEditing"
+              variant="outlined"
+              prepend-icon="mdi-pencil"
+            >
+              Editar
+            </v-btn>
+          </v-card-title>
           
-          <!-- Mensagens -->
-          <div v-if="successMessage" class="bg-green-50 border-l-4 border-green-500 p-4 mb-4">
-            <div class="flex">
-              <div class="flex-shrink-0">
-                <span class="material-icons text-green-500">check_circle</span>
-              </div>
-              <div class="ml-3">
-                <p class="text-sm text-green-700">{{ successMessage }}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div v-if="errorMessage" class="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
-            <div class="flex">
-              <div class="flex-shrink-0">
-                <span class="material-icons text-red-500">error</span>
-              </div>
-              <div class="ml-3">
-                <p class="text-sm text-red-700">{{ errorMessage }}</p>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Formulário -->
-          <form @submit.prevent="saveProfile" class="space-y-6">
-            <!-- Nome -->
-            <div>
-              <label for="name" class="form-label">Nome</label>
-              <input
-                id="name"
+          <v-card-text>
+            <!-- Mensagens -->
+            <v-alert
+              v-if="successMessage"
+              type="success"
+              variant="tonal"
+              class="mb-4"
+              closable
+              @click:close="successMessage = ''"
+            >
+              {{ successMessage }}
+            </v-alert>
+            
+            <v-alert
+              v-if="errorMessage"
+              type="error"
+              variant="tonal"
+              class="mb-4"
+              closable
+              @click:close="errorMessage = ''"
+            >
+              {{ errorMessage }}
+            </v-alert>
+            
+            <!-- Formulário -->
+            <v-form @submit.prevent="saveProfile">
+              <!-- Nome -->
+              <v-text-field
                 v-model="profile.name"
-                type="text"
+                label="Nome"
+                variant="outlined"
+                density="compact"
                 :disabled="!isEditing"
-                class="form-input"
-              />
-            </div>
-            
-            <!-- Email -->
-            <div>
-              <label for="email" class="form-label">Email</label>
-              <input
-                id="email"
+                class="mb-4"
+                prepend-inner-icon="mdi-account"
+              ></v-text-field>
+              
+              <!-- Email -->
+              <v-text-field
                 v-model="profile.email"
+                label="Email"
                 type="email"
+                variant="outlined"
+                density="compact"
                 disabled
-                class="form-input bg-gray-50"
-              />
-              <p class="text-xs text-gray-500 mt-1">O email não pode ser alterado</p>
-            </div>
+                class="mb-4"
+                prepend-inner-icon="mdi-email"
+                hint="O email não pode ser alterado"
+                persistent-hint
+              ></v-text-field>
+              
+              <!-- Campos de senha (apenas em modo de edição) -->
+              <v-card v-if="isEditing" class="mt-6" variant="outlined">
+                <v-card-title class="d-flex align-center bg-grey-lighten-5">
+                  <v-icon class="me-2" color="primary">mdi-lock</v-icon>
+                  Alterar Senha
+                </v-card-title>
+                
+                <v-card-text>
+                  <!-- Senha atual -->
+                  <v-text-field
+                    v-model="profile.currentPassword"
+                    label="Senha Atual"
+                    type="password"
+                    variant="outlined"
+                    density="compact"
+                    class="mb-4"
+                    prepend-inner-icon="mdi-lock-outline"
+                    placeholder="Digite sua senha atual"
+                  ></v-text-field>
+                  
+                  <!-- Nova senha -->
+                  <v-text-field
+                    v-model="profile.newPassword"
+                    label="Nova Senha"
+                    type="password"
+                    variant="outlined"
+                    density="compact"
+                    class="mb-4"
+                    prepend-inner-icon="mdi-lock"
+                    placeholder="Digite a nova senha"
+                    hint="Mínimo de 6 caracteres"
+                    persistent-hint
+                  ></v-text-field>
+                  
+                  <!-- Confirmar nova senha -->
+                  <v-text-field
+                    v-model="profile.confirmPassword"
+                    label="Confirmar Nova Senha"
+                    type="password"
+                    variant="outlined"
+                    density="compact"
+                    prepend-inner-icon="mdi-lock-check"
+                    placeholder="Confirme a nova senha"
+                  ></v-text-field>
+                </v-card-text>
+              </v-card>
+            </v-form>
+          </v-card-text>
+          
+          <!-- Botões (apenas em modo de edição) -->
+          <v-card-actions v-if="isEditing" class="pa-6">
+            <v-spacer></v-spacer>
+            <v-btn
+              @click="cancelEditing"
+              variant="outlined"
+              class="me-3"
+            >
+              Cancelar
+            </v-btn>
             
-            <!-- Campos de senha (apenas em modo de edição) -->
-            <div v-if="isEditing" class="border-t border-gray-200 pt-6">
-              <h3 class="text-lg font-medium text-gray-900 mb-4">Alterar Senha</h3>
-              
-              <!-- Senha atual -->
-              <div class="mb-4">
-                <label for="current-password" class="form-label">Senha Atual</label>
-                <input
-                  id="current-password"
-                  v-model="profile.currentPassword"
-                  type="password"
-                  class="form-input"
-                  placeholder="Digite sua senha atual"
-                />
-              </div>
-              
-              <!-- Nova senha -->
-              <div class="mb-4">
-                <label for="new-password" class="form-label">Nova Senha</label>
-                <input
-                  id="new-password"
-                  v-model="profile.newPassword"
-                  type="password"
-                  class="form-input"
-                  placeholder="Digite a nova senha"
-                />
-                <p class="text-xs text-gray-500 mt-1">Mínimo de 6 caracteres</p>
-              </div>
-              
-              <!-- Confirmar nova senha -->
-              <div>
-                <label for="confirm-password" class="form-label">Confirmar Nova Senha</label>
-                <input
-                  id="confirm-password"
-                  v-model="profile.confirmPassword"
-                  type="password"
-                  class="form-input"
-                  placeholder="Confirme a nova senha"
-                />
-              </div>
-            </div>
-            
-            <!-- Botões (apenas em modo de edição) -->
-            <div v-if="isEditing" class="flex justify-end space-x-3">
-              <button
-                type="button"
-                @click="cancelEditing"
-                class="btn btn-outline"
-              >
-                Cancelar
-              </button>
-              
-              <button
-                type="submit"
-                :disabled="isLoading"
-                class="btn btn-primary"
-              >
-                <span v-if="isLoading" class="animate-spin mr-2">
-                  <span class="material-icons text-sm">refresh</span>
-                </span>
-                Salvar Alterações
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
+            <v-btn
+              @click="saveProfile"
+              :loading="isLoading"
+              color="primary"
+            >
+              Salvar Alterações
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-col>
       
       <!-- Card de perfil -->
-      <div>
-        <div class="card text-center">
-          <div class="w-24 h-24 rounded-full bg-primary-600 text-white flex items-center justify-center text-3xl font-bold mx-auto mb-4">
-            {{ profile.name.charAt(0).toUpperCase() }}
-          </div>
-          
-          <h3 class="text-xl font-semibold">{{ profile.name }}</h3>
-          <p class="text-gray-600">{{ profile.email }}</p>
-          
-          <div class="mt-4 pt-4 border-t border-gray-200 space-y-3">
-            <div class="flex justify-between items-center">
-              <span class="text-gray-600">Cargo:</span>
-              <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                {{ getRoleLabel(authStore.user?.role) }}
+      <v-col cols="12" md="4">
+        <v-card elevation="4" class="text-center">
+          <v-card-text>
+            <v-avatar
+              color="primary"
+              size="96"
+              class="mb-4"
+            >
+              <span class="text-h4 font-weight-bold text-white">
+                {{ profile.name.charAt(0).toUpperCase() }}
               </span>
-            </div>
+            </v-avatar>
             
-            <div class="flex justify-between items-center">
-              <span class="text-gray-600">Departamento:</span>
-              <span class="text-sm font-medium">
-                {{ getDepartmentLabel(authStore.user?.department) }}
-              </span>
-            </div>
+            <h3 class="text-h5 font-weight-medium mb-2">{{ profile.name }}</h3>
+            <p class="text-grey-darken-1 mb-4">{{ profile.email }}</p>
             
-            <div v-if="authStore.user?.company" class="pt-3 border-t border-gray-100">
-              <div class="text-left">
-                <h4 class="text-sm font-medium text-gray-900 mb-2">Empresa</h4>
-                <div class="space-y-1 text-sm text-gray-600">
-                  <div class="flex items-center">
-                    <span class="material-icons text-sm mr-2">business</span>
-                    {{ authStore.user.company.name }}
-                  </div>
-                  <div v-if="authStore.user.company.email" class="flex items-center">
-                    <span class="material-icons text-sm mr-2">email</span>
-                    {{ authStore.user.company.email }}
-                  </div>
-                  <div v-if="authStore.user.company.phone" class="flex items-center">
-                    <span class="material-icons text-sm mr-2">phone</span>
-                    {{ authStore.user.company.phone }}
-                  </div>
-                  <div v-if="authStore.user.company.address" class="flex items-start">
-                    <span class="material-icons text-sm mr-2 mt-0.5">location_on</span>
-                    <span class="break-words">{{ authStore.user.company.address }}</span>
-                  </div>
-                </div>
+            <v-divider class="mb-4"></v-divider>
+            
+            <div class="text-left">
+              <div class="d-flex justify-space-between align-center mb-3">
+                <span class="text-grey-darken-1">Cargo:</span>
+                <v-chip
+                  :color="
+                    authStore.user?.role === 'owner' ? 'purple' :
+                    authStore.user?.role === 'admin' ? 'primary' :
+                    authStore.user?.role === 'manager' ? 'info' : 'grey'
+                  "
+                  size="small"
+                  variant="tonal"
+                >
+                  {{ getRoleLabel(authStore.user?.role) }}
+                </v-chip>
               </div>
+              
+              <div class="d-flex justify-space-between align-center mb-3">
+                <span class="text-grey-darken-1">Departamento:</span>
+                <span class="font-weight-medium">
+                  {{ getDepartmentLabel(authStore.user?.department) }}
+                </span>
+              </div>
+              
+              <v-card v-if="authStore.user?.company" class="mt-4" variant="outlined">
+                <v-card-title class="text-body-1 font-weight-medium">
+                  <v-icon class="me-2">mdi-domain</v-icon>
+                  Empresa
+                </v-card-title>
+                
+                <v-card-text class="pt-0">
+                  <div class="d-flex align-center mb-2">
+                    <v-icon size="small" class="me-2">mdi-office-building</v-icon>
+                    <span class="text-body-2">{{ authStore.user.company.name }}</span>
+                  </div>
+                  
+                  <div v-if="authStore.user.company.email" class="d-flex align-center mb-2">
+                    <v-icon size="small" class="me-2">mdi-email</v-icon>
+                    <span class="text-body-2">{{ authStore.user.company.email }}</span>
+                  </div>
+                  
+                  <div v-if="authStore.user.company.phone" class="d-flex align-center mb-2">
+                    <v-icon size="small" class="me-2">mdi-phone</v-icon>
+                    <span class="text-body-2">{{ authStore.user.company.phone }}</span>
+                  </div>
+                  
+                  <div v-if="authStore.user.company.address" class="d-flex align-start">
+                    <v-icon size="small" class="me-2 mt-1">mdi-map-marker</v-icon>
+                    <span class="text-body-2">{{ authStore.user.company.address }}</span>
+                  </div>
+                </v-card-text>
+              </v-card>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>

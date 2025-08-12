@@ -164,290 +164,335 @@ const updatePhone = (event) => {
 </script>
 
 <template>
-  <div>
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="page-title">Configurações da Empresa</h1>
-    </div>
+  <v-container fluid class="pa-6">
+    <!-- Header -->
+    <v-row class="mb-6">
+      <v-col>
+        <h1 class="text-h4 font-weight-bold mb-2">Configurações da Empresa</h1>
+      </v-col>
+    </v-row>
 
-    <!-- Carregando -->
-    <div v-if="isLoading" class="flex justify-center py-8">
-      <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600"></div>
-    </div>
+    <!-- Loading -->
+    <v-row v-if="isLoading" justify="center">
+      <v-col cols="auto" class="text-center">
+        <v-progress-circular
+          indeterminate
+          color="primary"
+          size="64"
+        ></v-progress-circular>
+        <p class="mt-4 text-h6">Carregando configurações...</p>
+      </v-col>
+    </v-row>
 
     <div v-else>
       <!-- Mensagens -->
-      <div v-if="successMessage" class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
-        <div class="flex">
-          <span class="material-icons text-green-500 mr-3">check_circle</span>
-          <p class="text-green-700">{{ successMessage }}</p>
-        </div>
-      </div>
+      <v-alert
+        v-if="successMessage"
+        type="success"
+        variant="tonal"
+        class="mb-6"
+        closable
+        @click:close="successMessage = ''"
+      >
+        {{ successMessage }}
+      </v-alert>
 
-      <div v-if="errorMessage" class="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
-        <div class="flex">
-          <span class="material-icons text-red-500 mr-3">error</span>
-          <p class="text-red-700">{{ errorMessage }}</p>
-        </div>
-      </div>
+      <v-alert
+        v-if="errorMessage"
+        type="error"
+        variant="tonal"
+        class="mb-6"
+        closable
+        @click:close="errorMessage = ''"
+      >
+        {{ errorMessage }}
+      </v-alert>
 
       <!-- Aviso de permissão -->
-      <div v-if="!canEdit" class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
-        <div class="flex">
-          <span class="material-icons text-yellow-500 mr-3">warning</span>
-          <p class="text-yellow-700">
-            Apenas proprietários e administradores podem alterar as configurações da empresa.
-          </p>
-        </div>
-      </div>
+      <v-alert
+        v-if="!canEdit"
+        type="warning"
+        variant="tonal"
+        class="mb-6"
+      >
+        Apenas proprietários e administradores podem alterar as configurações da empresa.
+      </v-alert>
 
-      <form @submit.prevent="saveSettings" class="space-y-8">
+      <v-form @submit.prevent="saveSettings">
         <!-- Informações Básicas -->
-        <div class="card">
-          <div class="card-header">
-            <h2 class="text-lg font-semibold">Informações Básicas</h2>
-          </div>
-          <div class="p-6 space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="form-label">Nome da Empresa <span class="text-red-500">*</span></label>
-                <input 
-                  v-model="company.name" 
-                  type="text" 
-                  required 
+        <v-card class="mb-6" elevation="4">
+          <v-card-title class="d-flex align-center bg-grey-lighten-5">
+            <v-icon class="me-2" color="primary">mdi-office-building</v-icon>
+            Informações Básicas
+          </v-card-title>
+          
+          <v-card-text>
+            <v-row class="mb-4">
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="company.name"
+                  label="Nome da Empresa"
+                  variant="outlined"
+                  density="compact"
+                  required
                   :disabled="!canEdit"
-                  class="form-input" 
-                />
-              </div>
-              <div>
-                <label class="form-label">CNPJ</label>
-                <input 
-                  :value="company.cnpj"
+                  prepend-inner-icon="mdi-domain"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  :model-value="company.cnpj"
                   @input="updateCNPJ"
-                  type="text" 
+                  label="CNPJ"
+                  variant="outlined"
+                  density="compact"
                   :disabled="!canEdit"
-                  class="form-input"
+                  prepend-inner-icon="mdi-card-account-details"
                   placeholder="00.000.000/0000-00"
-                />
-              </div>
-            </div>
+                ></v-text-field>
+              </v-col>
+            </v-row>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="form-label">Email</label>
-                <input 
-                  v-model="company.email" 
-                  type="email" 
+            <v-row class="mb-4">
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="company.email"
+                  label="Email"
+                  type="email"
+                  variant="outlined"
+                  density="compact"
                   :disabled="!canEdit"
-                  class="form-input" 
-                />
-              </div>
-              <div>
-                <label class="form-label">Telefone</label>
-                <input 
-                  :value="company.phone"
+                  prepend-inner-icon="mdi-email"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  :model-value="company.phone"
                   @input="updatePhone"
-                  type="text" 
+                  label="Telefone"
+                  variant="outlined"
+                  density="compact"
                   :disabled="!canEdit"
-                  class="form-input"
+                  prepend-inner-icon="mdi-phone"
                   placeholder="(00) 00000-0000"
-                />
-              </div>
-            </div>
+                ></v-text-field>
+              </v-col>
+            </v-row>
             
-            <div>
-              <label class="form-label">Website</label>
-              <input 
-                v-model="company.website" 
-                type="url" 
-                :disabled="!canEdit"
-                class="form-input"
-                placeholder="https://www.exemplo.com"
-              />
-            </div>
+            <v-text-field
+              v-model="company.website"
+              label="Website"
+              type="url"
+              variant="outlined"
+              density="compact"
+              :disabled="!canEdit"
+              class="mb-4"
+              prepend-inner-icon="mdi-web"
+              placeholder="https://www.exemplo.com"
+            ></v-text-field>
             
-            <div>
-              <label class="form-label">Descrição</label>
-              <textarea 
-                v-model="company.description" 
-                :disabled="!canEdit"
-                class="form-input" 
-                rows="3"
-                placeholder="Descreva sua empresa..."
-              ></textarea>
-            </div>
-          </div>
-        </div>
+            <v-textarea
+              v-model="company.description"
+              label="Descrição"
+              variant="outlined"
+              density="compact"
+              :disabled="!canEdit"
+              rows="3"
+              prepend-inner-icon="mdi-text"
+              placeholder="Descreva sua empresa..."
+            ></v-textarea>
+          </v-card-text>
+        </v-card>
 
         <!-- Endereço -->
-        <div class="card">
-          <div class="card-header">
-            <h2 class="text-lg font-semibold">Endereço</h2>
-          </div>
-          <div class="p-6 space-y-4">
-            <div>
-              <label class="form-label">Endereço Completo</label>
-              <input 
-                v-model="company.address" 
-                type="text" 
-                :disabled="!canEdit"
-                class="form-input"
-                placeholder="Rua, número, bairro"
-              />
-            </div>
+        <v-card class="mb-6" elevation="4">
+          <v-card-title class="d-flex align-center bg-grey-lighten-5">
+            <v-icon class="me-2" color="primary">mdi-map-marker</v-icon>
+            Endereço
+          </v-card-title>
+          
+          <v-card-text>
+            <v-text-field
+              v-model="company.address"
+              label="Endereço Completo"
+              variant="outlined"
+              density="compact"
+              :disabled="!canEdit"
+              class="mb-4"
+              prepend-inner-icon="mdi-road"
+              placeholder="Rua, número, bairro"
+            ></v-text-field>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label class="form-label">Cidade</label>
-                <input 
-                  v-model="company.city" 
-                  type="text" 
+            <v-row>
+              <v-col cols="12" md="4">
+                <v-text-field
+                  v-model="company.city"
+                  label="Cidade"
+                  variant="outlined"
+                  density="compact"
                   :disabled="!canEdit"
-                  class="form-input" 
-                />
-              </div>
-              <div>
-                <label class="form-label">Estado</label>
-                <select 
-                  v-model="company.state" 
+                  prepend-inner-icon="mdi-city"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-select
+                  v-model="company.state"
+                  :items="brazilianStates"
+                  label="Estado"
+                  variant="outlined"
+                  density="compact"
                   :disabled="!canEdit"
-                  class="form-input"
-                >
-                  <option value="">Selecione</option>
-                  <option v-for="state in brazilianStates" :key="state" :value="state">
-                    {{ state }}
-                  </option>
-                </select>
-              </div>
-              <div>
-                <label class="form-label">CEP</label>
-                <input 
-                  v-model="company.zipCode" 
-                  type="text" 
+                  prepend-inner-icon="mdi-map"
+                  placeholder="Selecione"
+                ></v-select>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-text-field
+                  v-model="company.zipCode"
+                  label="CEP"
+                  variant="outlined"
+                  density="compact"
                   :disabled="!canEdit"
-                  class="form-input"
+                  prepend-inner-icon="mdi-mailbox"
                   placeholder="00000-000"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+                ></v-text-field>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
 
         <!-- Redes Sociais -->
-        <div class="card">
-          <div class="card-header">
-            <h2 class="text-lg font-semibold">Redes Sociais</h2>
-          </div>
-          <div class="p-6 space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="form-label">Facebook</label>
-                <input 
-                  v-model="company.socialMedia.facebook" 
-                  type="url" 
+        <v-card class="mb-6" elevation="4">
+          <v-card-title class="d-flex align-center bg-grey-lighten-5">
+            <v-icon class="me-2" color="primary">mdi-share-variant</v-icon>
+            Redes Sociais
+          </v-card-title>
+          
+          <v-card-text>
+            <v-row class="mb-4">
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="company.socialMedia.facebook"
+                  label="Facebook"
+                  type="url"
+                  variant="outlined"
+                  density="compact"
                   :disabled="!canEdit"
-                  class="form-input"
+                  prepend-inner-icon="mdi-facebook"
                   placeholder="https://facebook.com/sua-empresa"
-                />
-              </div>
-              <div>
-                <label class="form-label">Instagram</label>
-                <input 
-                  v-model="company.socialMedia.instagram" 
-                  type="url" 
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="company.socialMedia.instagram"
+                  label="Instagram"
+                  type="url"
+                  variant="outlined"
+                  density="compact"
                   :disabled="!canEdit"
-                  class="form-input"
+                  prepend-inner-icon="mdi-instagram"
                   placeholder="https://instagram.com/sua-empresa"
-                />
-              </div>
-            </div>
+                ></v-text-field>
+              </v-col>
+            </v-row>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="form-label">WhatsApp</label>
-                <input 
-                  v-model="company.socialMedia.whatsapp" 
-                  type="text" 
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="company.socialMedia.whatsapp"
+                  label="WhatsApp"
+                  variant="outlined"
+                  density="compact"
                   :disabled="!canEdit"
-                  class="form-input"
+                  prepend-inner-icon="mdi-whatsapp"
                   placeholder="(00) 00000-0000"
-                />
-              </div>
-              <div>
-                <label class="form-label">LinkedIn</label>
-                <input 
-                  v-model="company.socialMedia.linkedin" 
-                  type="url" 
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="company.socialMedia.linkedin"
+                  label="LinkedIn"
+                  type="url"
+                  variant="outlined"
+                  density="compact"
                   :disabled="!canEdit"
-                  class="form-input"
+                  prepend-inner-icon="mdi-linkedin"
                   placeholder="https://linkedin.com/company/sua-empresa"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+                ></v-text-field>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
 
         <!-- Horário de Funcionamento -->
-        <div class="card">
-          <div class="card-header">
-            <h2 class="text-lg font-semibold">Horário de Funcionamento</h2>
-          </div>
-          <div class="p-6">
-            <div class="space-y-3">
-              <div 
-                v-for="day in weekDays" 
+        <v-card class="mb-6" elevation="4">
+          <v-card-title class="d-flex align-center bg-grey-lighten-5">
+            <v-icon class="me-2" color="primary">mdi-clock-outline</v-icon>
+            Horário de Funcionamento
+          </v-card-title>
+          
+          <v-card-text>
+            <v-list>
+              <v-list-item
+                v-for="day in weekDays"
                 :key="day.key"
-                class="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg"
+                class="mb-2"
               >
-                <div class="w-24">
-                  <span class="text-sm font-medium">{{ day.label }}</span>
-                </div>
+                <template v-slot:prepend>
+                  <div class="me-4" style="min-width: 120px;">
+                    <span class="text-body-2 font-weight-medium">{{ day.label }}</span>
+                  </div>
+                </template>
                 
-                <div class="flex items-center space-x-2">
-                  <input 
+                <div class="d-flex align-center ga-4">
+                  <v-checkbox
                     v-model="company.businessHours[day.key].closed"
-                    type="checkbox"
                     :disabled="!canEdit"
-                    class="h-4 w-4 text-primary-600"
-                  />
-                  <span class="text-sm">Fechado</span>
+                    label="Fechado"
+                    density="compact"
+                    hide-details
+                  ></v-checkbox>
+                  
+                  <div v-if="!company.businessHours[day.key].closed" class="d-flex align-center ga-2">
+                    <v-text-field
+                      v-model="company.businessHours[day.key].open"
+                      type="time"
+                      :disabled="!canEdit"
+                      variant="outlined"
+                      density="compact"
+                      style="width: 120px;"
+                      hide-details
+                    ></v-text-field>
+                    <span class="text-caption">às</span>
+                    <v-text-field
+                      v-model="company.businessHours[day.key].close"
+                      type="time"
+                      :disabled="!canEdit"
+                      variant="outlined"
+                      density="compact"
+                      style="width: 120px;"
+                      hide-details
+                    ></v-text-field>
+                  </div>
                 </div>
-                
-                <div v-if="!company.businessHours[day.key].closed" class="flex items-center space-x-2">
-                  <input 
-                    v-model="company.businessHours[day.key].open"
-                    type="time"
-                    :disabled="!canEdit"
-                    class="form-input w-24"
-                  />
-                  <span class="text-sm">às</span>
-                  <input 
-                    v-model="company.businessHours[day.key].close"
-                    type="time"
-                    :disabled="!canEdit"
-                    class="form-input w-24"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-
+              </v-list-item>
+            </v-list>
+          </v-card-text>
+        </v-card>
 
         <!-- Botões -->
-        <div v-if="canEdit" class="flex justify-end">
-          <button 
-            type="submit" 
-            :disabled="isSaving"
-            class="btn btn-primary"
+        <v-card-actions v-if="canEdit" class="pa-6">
+          <v-spacer></v-spacer>
+          <v-btn
+            type="submit"
+            :loading="isSaving"
+            color="primary"
+            size="large"
           >
-            <span v-if="isSaving" class="animate-spin mr-2">
-              <span class="material-icons text-sm">refresh</span>
-            </span>
             Salvar Configurações
-          </button>
-        </div>
-      </form>
+          </v-btn>
+        </v-card-actions>
+      </v-form>
     </div>
-  </div>
+  </v-container>
 </template>

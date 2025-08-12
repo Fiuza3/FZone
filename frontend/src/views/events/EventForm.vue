@@ -219,255 +219,506 @@ const formatCurrency = (value) => {
 </script>
 
 <template>
-  <div>
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="page-title">{{ isEditing ? 'Editar Evento' : 'Novo Evento' }}</h1>
-    </div>
+  <v-container fluid class="pa-6">
+    <!-- Header -->
+    <v-row class="mb-6">
+      <v-col>
+        <div class="d-flex justify-space-between align-center mb-4">
+          <div>
+            <h1 class="text-h4 font-weight-bold mb-2">{{ isEditing ? 'Editar Evento' : 'Novo Evento' }}</h1>
+          </div>
+          <v-btn
+            @click="router.push('/events')"
+            variant="outlined"
+            prepend-icon="mdi-arrow-left"
+            size="large"
+          >
+            Voltar
+          </v-btn>
+        </div>
+      </v-col>
+    </v-row>
 
-    <form @submit.prevent="saveEvent" class="space-y-6">
+    <v-form @submit.prevent="saveEvent">
       <!-- Mensagem de Erro -->
-      <div v-if="errorMessage" class="bg-red-50 border-l-4 border-red-500 p-4">
-        <p class="text-red-700">{{ errorMessage }}</p>
-      </div>
+      <v-alert
+        v-if="errorMessage"
+        type="error"
+        variant="tonal"
+        class="mb-6"
+        closable
+        @click:close="errorMessage = ''"
+      >
+        {{ errorMessage }}
+      </v-alert>
 
       <!-- Informações Básicas -->
-      <div class="card">
-        <div class="card-header">
-          <h2 class="text-lg font-semibold">Informações Básicas</h2>
-        </div>
-        <div class="p-6 space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="form-label">Título <span class="text-red-500">*</span></label>
-              <input v-model="form.title" type="text" required class="form-input" />
-            </div>
-            <div>
-              <label class="form-label">Status</label>
-              <select v-model="form.status" class="form-input">
-                <option v-for="option in statusOptions" :key="option.value" :value="option.value">
-                  {{ option.label }}
-                </option>
-              </select>
-            </div>
-          </div>
+      <v-card class="mb-6" elevation="4">
+        <v-card-title class="d-flex align-center bg-grey-lighten-5">
+          <v-icon class="me-2" color="primary">mdi-calendar</v-icon>
+          Informações Básicas
+        </v-card-title>
+        
+        <v-card-text>
+          <v-row class="mb-4">
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="form.title"
+                label="Título"
+                variant="outlined"
+                density="compact"
+                required
+                prepend-inner-icon="mdi-format-title"
+                placeholder="Título do evento"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-select
+                v-model="form.status"
+                :items="statusOptions"
+                item-title="label"
+                item-value="value"
+                label="Status"
+                variant="outlined"
+                density="compact"
+                prepend-inner-icon="mdi-flag"
+              ></v-select>
+            </v-col>
+          </v-row>
           
-          <div>
-            <label class="form-label">Descrição</label>
-            <textarea v-model="form.description" class="form-input" rows="3"></textarea>
-          </div>
+          <v-textarea
+            v-model="form.description"
+            label="Descrição"
+            variant="outlined"
+            density="compact"
+            rows="3"
+            class="mb-4"
+            prepend-inner-icon="mdi-text"
+            placeholder="Descrição do evento"
+          ></v-textarea>
           
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label class="form-label">Data/Hora Início <span class="text-red-500">*</span></label>
-              <input v-model="form.startDate" type="datetime-local" required class="form-input" />
-            </div>
-            <div>
-              <label class="form-label">Data/Hora Fim <span class="text-red-500">*</span></label>
-              <input v-model="form.endDate" type="datetime-local" required class="form-input" />
-            </div>
-            <div>
-              <label class="form-label">Receita <span class="text-red-500">*</span></label>
-              <input v-model.number="form.revenue" type="number" min="0" step="0.01" required class="form-input" />
-            </div>
-          </div>
+          <v-row class="mb-4">
+            <v-col cols="12" md="4">
+              <v-text-field
+                v-model="form.startDate"
+                label="Data/Hora Início"
+                type="datetime-local"
+                variant="outlined"
+                density="compact"
+                required
+                prepend-inner-icon="mdi-calendar-start"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-text-field
+                v-model="form.endDate"
+                label="Data/Hora Fim"
+                type="datetime-local"
+                variant="outlined"
+                density="compact"
+                required
+                prepend-inner-icon="mdi-calendar-end"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-text-field
+                v-model.number="form.revenue"
+                label="Receita"
+                type="number"
+                min="0"
+                step="0.01"
+                variant="outlined"
+                density="compact"
+                required
+                prepend-inner-icon="mdi-currency-usd"
+                prefix="R$"
+                placeholder="0.00"
+              ></v-text-field>
+            </v-col>
+          </v-row>
           
-          <div>
-            <label class="form-label">Local <span class="text-red-500">*</span></label>
-            <input v-model="form.location" type="text" required class="form-input" />
-          </div>
-        </div>
-      </div>
+          <v-text-field
+            v-model="form.location"
+            label="Local"
+            variant="outlined"
+            density="compact"
+            required
+            prepend-inner-icon="mdi-map-marker"
+            placeholder="Local do evento"
+          ></v-text-field>
+        </v-card-text>
+      </v-card>
 
       <!-- Itens/Produtos -->
-      <div class="card">
-        <div class="card-header">
-          <div class="flex justify-between items-center">
-            <h2 class="text-lg font-semibold">Itens do Evento</h2>
-            <button type="button" @click="addItem" class="btn btn-outline btn-sm">
-              <span class="material-icons mr-1">add</span>
-              Adicionar Item
-            </button>
+      <v-card class="mb-6" elevation="4">
+        <v-card-title class="d-flex align-center justify-space-between bg-grey-lighten-5">
+          <div class="d-flex align-center">
+            <v-icon class="me-2" color="primary">mdi-package-variant</v-icon>
+            Itens do Evento
           </div>
-        </div>
-        <div class="p-6">
-          <div v-if="form.items.length === 0" class="text-center text-gray-500 py-4">
-            Nenhum item adicionado
-          </div>
-          <div v-else class="space-y-4">
-            <div v-for="(item, index) in form.items" :key="index" class="border rounded-lg p-4">
-              <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                <div>
-                  <label class="form-label">Produto</label>
-                  <select v-model="item.product" @change="updateItemCost(index)" class="form-input">
-                    <option value="">Selecione um produto</option>
-                    <option v-for="product in products" :key="product._id" :value="product._id">
-                      {{ product.name }} ({{ product.sku }})
-                    </option>
-                  </select>
-                </div>
-                <div>
-                  <label class="form-label">Quantidade</label>
-                  <input v-model.number="item.quantity" type="number" min="1" class="form-input" />
-                </div>
-                <div>
-                  <label class="form-label">Custo Unitário</label>
-                  <input v-model.number="item.unitCost" type="number" min="0" step="0.01" class="form-input" />
-                </div>
-                <div class="flex items-center space-x-2">
-                  <span class="text-sm font-medium">{{ formatCurrency(item.quantity * item.unitCost) }}</span>
-                  <button type="button" @click="removeItem(index)" class="btn btn-outline btn-sm text-red-600">
-                    <span class="material-icons">delete</span>
-                  </button>
-                </div>
-              </div>
+          <v-btn
+            @click="addItem"
+            color="primary"
+            variant="outlined"
+            size="small"
+            prepend-icon="mdi-plus"
+          >
+            Adicionar Item
+          </v-btn>
+        </v-card-title>
+        
+        <v-card-text>
+          <v-empty-state
+            v-if="form.items.length === 0"
+            icon="mdi-package-variant-closed"
+            title="Nenhum item adicionado"
+            text="Adicione itens para o evento"
+          ></v-empty-state>
+          
+          <div v-else>
+            <v-card
+              v-for="(item, index) in form.items"
+              :key="index"
+              class="mb-4"
+              variant="outlined"
+            >
+              <v-card-text>
+                <v-row align="end">
+                  <v-col cols="12" md="3">
+                    <v-select
+                      v-model="item.product"
+                      :items="products"
+                      item-title="name"
+                      item-value="_id"
+                      label="Produto"
+                      variant="outlined"
+                      density="compact"
+                      @update:model-value="updateItemCost(index)"
+                      prepend-inner-icon="mdi-package"
+                    >
+                      <template v-slot:item="{ props, item }">
+                        <v-list-item v-bind="props">
+                          <v-list-item-title>{{ item.raw.name }}</v-list-item-title>
+                          <v-list-item-subtitle>{{ item.raw.sku }}</v-list-item-subtitle>
+                        </v-list-item>
+                      </template>
+                    </v-select>
+                  </v-col>
+                  <v-col cols="12" md="2">
+                    <v-text-field
+                      v-model.number="item.quantity"
+                      label="Quantidade"
+                      type="number"
+                      min="1"
+                      variant="outlined"
+                      density="compact"
+                      prepend-inner-icon="mdi-counter"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="2">
+                    <v-text-field
+                      v-model.number="item.unitCost"
+                      label="Custo Unitário"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      variant="outlined"
+                      density="compact"
+                      prepend-inner-icon="mdi-currency-usd"
+                      prefix="R$"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="3">
+                    <div class="d-flex align-center justify-space-between">
+                      <v-chip color="success" variant="tonal">
+                        {{ formatCurrency(item.quantity * item.unitCost) }}
+                      </v-chip>
+                      <v-btn
+                        @click="removeItem(index)"
+                        icon="mdi-delete"
+                        color="error"
+                        variant="text"
+                        size="small"
+                      ></v-btn>
+                    </div>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+            
+            <v-divider class="my-4"></v-divider>
+            <div class="text-right">
+              <v-chip color="primary" size="large" variant="tonal">
+                <v-icon start>mdi-calculator</v-icon>
+                Total Itens: {{ formatCurrency(totalItemsCost) }}
+              </v-chip>
             </div>
-            <div class="text-right font-semibold">
-              Total Itens: {{ formatCurrency(totalItemsCost) }}
-            </div>
           </div>
-        </div>
-      </div>
+        </v-card-text>
+      </v-card>
 
       <!-- Equipe -->
-      <div class="card">
-        <div class="card-header">
-          <div class="flex justify-between items-center">
-            <h2 class="text-lg font-semibold">Equipe do Evento</h2>
-            <button type="button" @click="addStaffMember" class="btn btn-outline btn-sm">
-              <span class="material-icons mr-1">add</span>
-              Adicionar Pessoa
-            </button>
+      <v-card class="mb-6" elevation="4">
+        <v-card-title class="d-flex align-center justify-space-between bg-grey-lighten-5">
+          <div class="d-flex align-center">
+            <v-icon class="me-2" color="primary">mdi-account-group</v-icon>
+            Equipe do Evento
           </div>
-        </div>
-        <div class="p-6">
-          <div v-if="form.staff.length === 0" class="text-center text-gray-500 py-4">
-            Nenhuma pessoa adicionada
-          </div>
-          <div v-else class="space-y-4">
-            <div v-for="(member, index) in form.staff" :key="index" class="border rounded-lg p-4">
-              <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                <div>
-                  <label class="form-label">Funcionário</label>
-                  <select v-model="member.employee" class="form-input">
-                    <option value="">Selecione um funcionário</option>
-                    <option v-for="employee in employees" :key="employee._id" :value="employee._id">
-                      {{ employee.name }}
-                    </option>
-                  </select>
-                </div>
-                <div>
-                  <label class="form-label">Função</label>
-                  <input v-model="member.role" type="text" class="form-input" placeholder="Ex: Garçom, Cozinheiro" />
-                </div>
-                <div>
-                  <label class="form-label">Pagamento</label>
-                  <input v-model.number="member.payment" type="number" min="0" step="0.01" class="form-input" />
-                </div>
-                <div>
-                  <button type="button" @click="removeStaffMember(index)" class="btn btn-outline btn-sm text-red-600">
-                    <span class="material-icons">delete</span>
-                  </button>
-                </div>
-              </div>
+          <v-btn
+            @click="addStaffMember"
+            color="primary"
+            variant="outlined"
+            size="small"
+            prepend-icon="mdi-plus"
+          >
+            Adicionar Pessoa
+          </v-btn>
+        </v-card-title>
+        
+        <v-card-text>
+          <v-empty-state
+            v-if="form.staff.length === 0"
+            icon="mdi-account-group-outline"
+            title="Nenhuma pessoa adicionada"
+            text="Adicione membros da equipe para o evento"
+          ></v-empty-state>
+          
+          <div v-else>
+            <v-card
+              v-for="(member, index) in form.staff"
+              :key="index"
+              class="mb-4"
+              variant="outlined"
+            >
+              <v-card-text>
+                <v-row align="end">
+                  <v-col cols="12" md="3">
+                    <v-select
+                      v-model="member.employee"
+                      :items="employees"
+                      item-title="name"
+                      item-value="_id"
+                      label="Funcionário"
+                      variant="outlined"
+                      density="compact"
+                      prepend-inner-icon="mdi-account"
+                      placeholder="Selecione um funcionário"
+                    ></v-select>
+                  </v-col>
+                  <v-col cols="12" md="3">
+                    <v-text-field
+                      v-model="member.role"
+                      label="Função"
+                      variant="outlined"
+                      density="compact"
+                      prepend-inner-icon="mdi-briefcase"
+                      placeholder="Ex: Garçom, Cozinheiro"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="3">
+                    <v-text-field
+                      v-model.number="member.payment"
+                      label="Pagamento"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      variant="outlined"
+                      density="compact"
+                      prepend-inner-icon="mdi-currency-usd"
+                      prefix="R$"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="3">
+                    <div class="d-flex justify-end">
+                      <v-btn
+                        @click="removeStaffMember(index)"
+                        icon="mdi-delete"
+                        color="error"
+                        variant="text"
+                        size="small"
+                      ></v-btn>
+                    </div>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+            
+            <v-divider class="my-4"></v-divider>
+            <div class="text-right">
+              <v-chip color="info" size="large" variant="tonal">
+                <v-icon start>mdi-account-cash</v-icon>
+                Total Equipe: {{ formatCurrency(totalStaffCost) }}
+              </v-chip>
             </div>
-            <div class="text-right font-semibold">
-              Total Equipe: {{ formatCurrency(totalStaffCost) }}
-            </div>
           </div>
-        </div>
-      </div>
+        </v-card-text>
+      </v-card>
 
       <!-- Despesas -->
-      <div class="card">
-        <div class="card-header">
-          <div class="flex justify-between items-center">
-            <h2 class="text-lg font-semibold">Despesas Adicionais</h2>
-            <button type="button" @click="addExpense" class="btn btn-outline btn-sm">
-              <span class="material-icons mr-1">add</span>
-              Adicionar Despesa
-            </button>
+      <v-card class="mb-6" elevation="4">
+        <v-card-title class="d-flex align-center justify-space-between bg-grey-lighten-5">
+          <div class="d-flex align-center">
+            <v-icon class="me-2" color="primary">mdi-receipt</v-icon>
+            Despesas Adicionais
           </div>
-        </div>
-        <div class="p-6">
-          <div v-if="form.expenses.length === 0" class="text-center text-gray-500 py-4">
-            Nenhuma despesa adicionada
-          </div>
-          <div v-else class="space-y-4">
-            <div v-for="(expense, index) in form.expenses" :key="index" class="border rounded-lg p-4">
-              <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                <div>
-                  <label class="form-label">Descrição</label>
-                  <input v-model="expense.description" type="text" class="form-input" />
-                </div>
-                <div>
-                  <label class="form-label">Categoria</label>
-                  <select v-model="expense.category" class="form-input">
-                    <option v-for="cat in expenseCategories" :key="cat.value" :value="cat.value">
-                      {{ cat.label }}
-                    </option>
-                  </select>
-                </div>
-                <div>
-                  <label class="form-label">Valor</label>
-                  <input v-model.number="expense.amount" type="number" min="0" step="0.01" class="form-input" />
-                </div>
-                <div>
-                  <button type="button" @click="removeExpense(index)" class="btn btn-outline btn-sm text-red-600">
-                    <span class="material-icons">delete</span>
-                  </button>
-                </div>
-              </div>
+          <v-btn
+            @click="addExpense"
+            color="primary"
+            variant="outlined"
+            size="small"
+            prepend-icon="mdi-plus"
+          >
+            Adicionar Despesa
+          </v-btn>
+        </v-card-title>
+        
+        <v-card-text>
+          <v-empty-state
+            v-if="form.expenses.length === 0"
+            icon="mdi-receipt-outline"
+            title="Nenhuma despesa adicionada"
+            text="Adicione despesas adicionais para o evento"
+          ></v-empty-state>
+          
+          <div v-else>
+            <v-card
+              v-for="(expense, index) in form.expenses"
+              :key="index"
+              class="mb-4"
+              variant="outlined"
+            >
+              <v-card-text>
+                <v-row align="end">
+                  <v-col cols="12" md="3">
+                    <v-text-field
+                      v-model="expense.description"
+                      label="Descrição"
+                      variant="outlined"
+                      density="compact"
+                      prepend-inner-icon="mdi-text"
+                      placeholder="Descrição da despesa"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="3">
+                    <v-select
+                      v-model="expense.category"
+                      :items="expenseCategories"
+                      item-title="label"
+                      item-value="value"
+                      label="Categoria"
+                      variant="outlined"
+                      density="compact"
+                      prepend-inner-icon="mdi-tag"
+                    ></v-select>
+                  </v-col>
+                  <v-col cols="12" md="3">
+                    <v-text-field
+                      v-model.number="expense.amount"
+                      label="Valor"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      variant="outlined"
+                      density="compact"
+                      prepend-inner-icon="mdi-currency-usd"
+                      prefix="R$"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="3">
+                    <div class="d-flex justify-end">
+                      <v-btn
+                        @click="removeExpense(index)"
+                        icon="mdi-delete"
+                        color="error"
+                        variant="text"
+                        size="small"
+                      ></v-btn>
+                    </div>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+            
+            <v-divider class="my-4"></v-divider>
+            <div class="text-right">
+              <v-chip color="warning" size="large" variant="tonal">
+                <v-icon start>mdi-receipt</v-icon>
+                Total Despesas: {{ formatCurrency(totalExpenses) }}
+              </v-chip>
             </div>
-            <div class="text-right font-semibold">
-              Total Despesas: {{ formatCurrency(totalExpenses) }}
-            </div>
           </div>
-        </div>
-      </div>
+        </v-card-text>
+      </v-card>
 
       <!-- Resumo Financeiro -->
-      <div class="card">
-        <div class="card-header">
-          <h2 class="text-lg font-semibold">Resumo Financeiro</h2>
-        </div>
-        <div class="p-6">
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div class="bg-green-50 p-4 rounded-lg">
-              <div class="text-2xl font-bold text-green-600">{{ formatCurrency(form.revenue) }}</div>
-              <div class="text-sm text-green-700">Receita</div>
-            </div>
-            <div class="bg-red-50 p-4 rounded-lg">
-              <div class="text-2xl font-bold text-red-600">{{ formatCurrency(totalCost) }}</div>
-              <div class="text-sm text-red-700">Custo Total</div>
-            </div>
-            <div :class="['p-4 rounded-lg', profit >= 0 ? 'bg-blue-50' : 'bg-red-50']">
-              <div :class="['text-2xl font-bold', profit >= 0 ? 'text-blue-600' : 'text-red-600']">
-                {{ formatCurrency(profit) }}
-              </div>
-              <div :class="['text-sm', profit >= 0 ? 'text-blue-700' : 'text-red-700']">Lucro</div>
-            </div>
-            <div :class="['p-4 rounded-lg', profit >= 0 ? 'bg-blue-50' : 'bg-red-50']">
-              <div :class="['text-2xl font-bold', profit >= 0 ? 'text-blue-600' : 'text-red-600']">
-                {{ profitMargin }}%
-              </div>
-              <div :class="['text-sm', profit >= 0 ? 'text-blue-700' : 'text-red-700']">Margem</div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <v-card class="mb-6" elevation="4">
+        <v-card-title class="d-flex align-center bg-grey-lighten-5">
+          <v-icon class="me-2" color="primary">mdi-calculator</v-icon>
+          Resumo Financeiro
+        </v-card-title>
+        
+        <v-card-text>
+          <v-row>
+            <v-col cols="6" md="3">
+              <v-card color="success" variant="tonal" elevation="2">
+                <v-card-text class="text-center">
+                  <div class="text-h4 font-weight-bold">{{ formatCurrency(form.revenue) }}</div>
+                  <div class="text-caption mt-1">Receita</div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+            
+            <v-col cols="6" md="3">
+              <v-card color="error" variant="tonal" elevation="2">
+                <v-card-text class="text-center">
+                  <div class="text-h4 font-weight-bold">{{ formatCurrency(totalCost) }}</div>
+                  <div class="text-caption mt-1">Custo Total</div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+            
+            <v-col cols="6" md="3">
+              <v-card :color="profit >= 0 ? 'info' : 'error'" variant="tonal" elevation="2">
+                <v-card-text class="text-center">
+                  <div class="text-h4 font-weight-bold">{{ formatCurrency(profit) }}</div>
+                  <div class="text-caption mt-1">Lucro</div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+            
+            <v-col cols="6" md="3">
+              <v-card :color="profit >= 0 ? 'primary' : 'error'" variant="tonal" elevation="2">
+                <v-card-text class="text-center">
+                  <div class="text-h4 font-weight-bold">{{ profitMargin }}%</div>
+                  <div class="text-caption mt-1">Margem</div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
 
       <!-- Botões -->
-      <div class="flex justify-end space-x-3">
-        <button type="button" @click="router.push('/events')" class="btn btn-outline">
+      <v-card-actions class="pa-6">
+        <v-spacer></v-spacer>
+        <v-btn
+          @click="router.push('/events')"
+          variant="outlined"
+          size="large"
+          class="me-3"
+        >
           Cancelar
-        </button>
-        <button type="submit" :disabled="isLoading" class="btn btn-primary">
-          <span v-if="isLoading" class="animate-spin mr-2">
-            <span class="material-icons text-sm">refresh</span>
-          </span>
+        </v-btn>
+        
+        <v-btn
+          type="submit"
+          :loading="isLoading"
+          color="primary"
+          size="large"
+        >
           {{ isEditing ? 'Atualizar' : 'Criar' }} Evento
-        </button>
-      </div>
-    </form>
-  </div>
+        </v-btn>
+      </v-card-actions>
+    </v-form>
+  </v-container>
 </template>

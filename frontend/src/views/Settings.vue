@@ -146,158 +146,223 @@ const restoreDefaults = () => {
 </script>
 
 <template>
-  <div>
-    <h1 class="page-title">Configurações</h1>
+  <v-container fluid class="pa-6">
+    <!-- Header -->
+    <v-row class="mb-6">
+      <v-col>
+        <h1 class="text-h4 font-weight-bold mb-2">Configurações</h1>
+      </v-col>
+    </v-row>
     
     <!-- Mensagens -->
-    <div v-if="successMessage" class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <span class="material-icons text-green-500">check_circle</span>
-        </div>
-        <div class="ml-3">
-          <p class="text-sm text-green-700">{{ successMessage }}</p>
-        </div>
-      </div>
-    </div>
+    <v-alert
+      v-if="successMessage"
+      type="success"
+      variant="tonal"
+      class="mb-6"
+      closable
+      @click:close="successMessage = ''"
+    >
+      {{ successMessage }}
+    </v-alert>
     
-    <div v-if="errorMessage" class="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <span class="material-icons text-red-500">error</span>
-        </div>
-        <div class="ml-3">
-          <p class="text-sm text-red-700">{{ errorMessage }}</p>
-        </div>
-      </div>
-    </div>
+    <v-alert
+      v-if="errorMessage"
+      type="error"
+      variant="tonal"
+      class="mb-6"
+      closable
+      @click:close="errorMessage = ''"
+    >
+      {{ errorMessage }}
+    </v-alert>
     
     <!-- Configurações -->
-    <div class="space-y-6">
+    <div>
       <!-- Notificações -->
-      <div class="card">
-        <h2 class="section-title">Notificações</h2>
+      <v-card class="mb-6" elevation="4">
+        <v-card-title class="d-flex align-center bg-grey-lighten-5">
+          <v-icon class="me-2" color="primary">mdi-bell</v-icon>
+          Notificações
+        </v-card-title>
         
-        <div class="space-y-4">
-
-          
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="text-base font-medium text-gray-900 dark:text-white">Notificações do Navegador</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Receba notificações no navegador</p>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" v-model="settings.notifications.browser" class="sr-only peer">
-              <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-            </label>
-          </div>
-          
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="text-base font-medium text-gray-900 dark:text-white">Atualizações de Tarefas</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Notificações sobre tarefas atribuídas a você</p>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" v-model="settings.notifications.tasks" class="sr-only peer">
-              <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-            </label>
-          </div>
-          
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="text-base font-medium text-gray-900 dark:text-white">Atualizações do Sistema</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Notificações sobre atualizações do sistema</p>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" v-model="settings.notifications.system" class="sr-only peer">
-              <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-            </label>
-          </div>
-        </div>
-      </div>
+        <v-card-text>
+          <v-list>
+            <v-list-item>
+              <template v-slot:prepend>
+                <v-icon>mdi-web</v-icon>
+              </template>
+              
+              <v-list-item-title>Notificações do Navegador</v-list-item-title>
+              <v-list-item-subtitle>Receba notificações no navegador</v-list-item-subtitle>
+              
+              <template v-slot:append>
+                <v-switch
+                  v-model="settings.notifications.browser"
+                  color="primary"
+                  hide-details
+                ></v-switch>
+              </template>
+            </v-list-item>
+            
+            <v-list-item>
+              <template v-slot:prepend>
+                <v-icon>mdi-clipboard-check</v-icon>
+              </template>
+              
+              <v-list-item-title>Atualizações de Tarefas</v-list-item-title>
+              <v-list-item-subtitle>Notificações sobre tarefas atribuídas a você</v-list-item-subtitle>
+              
+              <template v-slot:append>
+                <v-switch
+                  v-model="settings.notifications.tasks"
+                  color="primary"
+                  hide-details
+                ></v-switch>
+              </template>
+            </v-list-item>
+            
+            <v-list-item>
+              <template v-slot:prepend>
+                <v-icon>mdi-cog</v-icon>
+              </template>
+              
+              <v-list-item-title>Atualizações do Sistema</v-list-item-title>
+              <v-list-item-subtitle>Notificações sobre atualizações do sistema</v-list-item-subtitle>
+              
+              <template v-slot:append>
+                <v-switch
+                  v-model="settings.notifications.system"
+                  color="primary"
+                  hide-details
+                ></v-switch>
+              </template>
+            </v-list-item>
+          </v-list>
+        </v-card-text>
+      </v-card>
       
       <!-- Aparência -->
-      <div class="card">
-        <h2 class="section-title">Aparência</h2>
+      <v-card class="mb-6" elevation="4">
+        <v-card-title class="d-flex align-center bg-grey-lighten-5">
+          <v-icon class="me-2" color="primary">mdi-palette</v-icon>
+          Aparência
+        </v-card-title>
         
-        <div class="space-y-4">
-          <div>
-            <label for="theme" class="form-label">Tema</label>
-            <select id="theme" v-model="settings.appearance.theme" class="form-input">
-              <option value="light">Claro</option>
-              <option value="dark">Escuro</option>
-              <option value="system">Sistema</option>
-            </select>
-          </div>
-          
-          <div>
-            <label for="density" class="form-label">Densidade</label>
-            <select id="density" v-model="settings.appearance.density" class="form-input">
-              <option value="comfortable">Confortável</option>
-              <option value="compact">Compacto</option>
-            </select>
-          </div>
-          
-          <div>
-            <label for="font-size" class="form-label">Tamanho da Fonte</label>
-            <select id="font-size" v-model="settings.appearance.fontSize" class="form-input">
-              <option value="small">Pequeno</option>
-              <option value="medium">Médio</option>
-              <option value="large">Grande</option>
-            </select>
-          </div>
-        </div>
-      </div>
+        <v-card-text>
+          <v-row>
+            <v-col cols="12" md="4">
+              <v-select
+                v-model="settings.appearance.theme"
+                :items="[
+                  { title: 'Claro', value: 'light' },
+                  { title: 'Escuro', value: 'dark' },
+                  { title: 'Sistema', value: 'system' }
+                ]"
+                label="Tema"
+                variant="outlined"
+                density="compact"
+                prepend-inner-icon="mdi-theme-light-dark"
+              ></v-select>
+            </v-col>
+            
+            <v-col cols="12" md="4">
+              <v-select
+                v-model="settings.appearance.density"
+                :items="[
+                  { title: 'Confortável', value: 'comfortable' },
+                  { title: 'Compacto', value: 'compact' }
+                ]"
+                label="Densidade"
+                variant="outlined"
+                density="compact"
+                prepend-inner-icon="mdi-view-compact"
+              ></v-select>
+            </v-col>
+            
+            <v-col cols="12" md="4">
+              <v-select
+                v-model="settings.appearance.fontSize"
+                :items="[
+                  { title: 'Pequeno', value: 'small' },
+                  { title: 'Médio', value: 'medium' },
+                  { title: 'Grande', value: 'large' }
+                ]"
+                label="Tamanho da Fonte"
+                variant="outlined"
+                density="compact"
+                prepend-inner-icon="mdi-format-size"
+              ></v-select>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
       
       <!-- Privacidade -->
-      <div class="card">
-        <h2 class="section-title">Privacidade</h2>
+      <v-card class="mb-6" elevation="4">
+        <v-card-title class="d-flex align-center bg-grey-lighten-5">
+          <v-icon class="me-2" color="primary">mdi-shield-account</v-icon>
+          Privacidade
+        </v-card-title>
         
-        <div class="space-y-4">
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="text-base font-medium text-gray-900 dark:text-white">Compartilhar Dados de Uso</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Ajude-nos a melhorar o sistema compartilhando dados anônimos de uso</p>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" v-model="settings.privacy.shareData" class="sr-only peer">
-              <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-            </label>
-          </div>
-          
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="text-base font-medium text-gray-900 dark:text-white">Analytics</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Permitir coleta de dados para análise de desempenho</p>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" v-model="settings.privacy.analytics" class="sr-only peer">
-              <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-            </label>
-          </div>
-        </div>
-      </div>
+        <v-card-text>
+          <v-list>
+            <v-list-item>
+              <template v-slot:prepend>
+                <v-icon>mdi-share-variant</v-icon>
+              </template>
+              
+              <v-list-item-title>Compartilhar Dados de Uso</v-list-item-title>
+              <v-list-item-subtitle>Ajude-nos a melhorar o sistema compartilhando dados anônimos de uso</v-list-item-subtitle>
+              
+              <template v-slot:append>
+                <v-switch
+                  v-model="settings.privacy.shareData"
+                  color="primary"
+                  hide-details
+                ></v-switch>
+              </template>
+            </v-list-item>
+            
+            <v-list-item>
+              <template v-slot:prepend>
+                <v-icon>mdi-chart-line</v-icon>
+              </template>
+              
+              <v-list-item-title>Analytics</v-list-item-title>
+              <v-list-item-subtitle>Permitir coleta de dados para análise de desempenho</v-list-item-subtitle>
+              
+              <template v-slot:append>
+                <v-switch
+                  v-model="settings.privacy.analytics"
+                  color="primary"
+                  hide-details
+                ></v-switch>
+              </template>
+            </v-list-item>
+          </v-list>
+        </v-card-text>
+      </v-card>
       
       <!-- Botões -->
-      <div class="flex justify-end space-x-3">
-        <button
+      <v-card-actions class="pa-6">
+        <v-spacer></v-spacer>
+        <v-btn
           @click="restoreDefaults"
-          class="btn btn-outline"
+          variant="outlined"
+          class="me-3"
         >
           Restaurar Padrões
-        </button>
+        </v-btn>
         
-        <button
+        <v-btn
           @click="saveSettings"
-          :disabled="isLoading"
-          class="btn btn-primary"
+          :loading="isLoading"
+          color="primary"
         >
-          <span v-if="isLoading" class="animate-spin mr-2">
-            <span class="material-icons text-sm">refresh</span>
-          </span>
           Salvar Configurações
-        </button>
-      </div>
+        </v-btn>
+      </v-card-actions>
     </div>
-  </div>
+  </v-container>
 </template>

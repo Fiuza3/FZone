@@ -8,7 +8,7 @@
 
 	const isLoading = ref(true);
 	const dateRange = ref({
-		startDate: new Date(new Date().setDate(1)).toISOString().split("T")[0],
+		startDate: new Date(new Date().getFullYear(), 0, 1).toISOString().split("T")[0], // Início do ano
 		endDate: new Date().toISOString().split("T")[0],
 	});
 	const showExportDialog = ref(false);

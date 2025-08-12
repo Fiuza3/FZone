@@ -54,114 +54,172 @@ const formatDate = (date) => {
 </script>
 
 <template>
-  <div>
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="page-title">Contas</h1>
-      <button 
-        v-if="authStore.isAdmin"
-        @click="openInviteModal"
-        class="btn btn-primary"
-      >
-        <span class="material-icons mr-2">person_add</span>
-        Convidar Funcionário
-      </button>
-    </div>
+  <v-container fluid class="pa-6">
+    <!-- Header -->
+    <v-row class="mb-6">
+      <v-col>
+        <div class="d-flex justify-space-between align-center mb-4">
+          <div>
+            <h1 class="text-h4 font-weight-bold mb-2">Contas</h1>
+          </div>
+          <v-btn
+            v-if="authStore.isAdmin"
+            @click="openInviteModal"
+            color="primary"
+            prepend-icon="mdi-account-plus"
+            size="large"
+          >
+            Convidar Funcionário
+          </v-btn>
+        </div>
+      </v-col>
+    </v-row>
 
     <!-- Lista de Funcionários -->
-    <div class="card mb-6">
-      <div class="card-header">
-        <h2 class="text-lg font-semibold">Funcionários</h2>
-      </div>
+    <v-card class="mb-6" elevation="4">
+      <v-card-title class="d-flex align-center bg-grey-lighten-5">
+        <v-icon class="me-2" color="primary">mdi-account-group</v-icon>
+        Funcionários
+      </v-card-title>
       
-      <div v-if="employeeStore.loading" class="p-4 text-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600 mx-auto"></div>
-      </div>
+      <!-- Loading -->
+      <v-row v-if="employeeStore.loading" justify="center" class="pa-8">
+        <v-col cols="auto" class="text-center">
+          <v-progress-circular
+            indeterminate
+            color="primary"
+            size="64"
+          ></v-progress-circular>
+          <p class="mt-4 text-h6">Carregando funcionários...</p>
+        </v-col>
+      </v-row>
       
-      <div v-else-if="employeeStore.employees.length === 0" class="p-4 text-center text-gray-500">
-        Nenhum funcionário encontrado
-      </div>
+      <!-- Empty state -->
+      <v-card-text v-else-if="employeeStore.employees.length === 0">
+        <v-empty-state
+          icon="mdi-account-group-outline"
+          title="Nenhum funcionário encontrado"
+          text="Convide funcionários para começar"
+        ></v-empty-state>
+      </v-card-text>
       
-      <div v-else class="overflow-x-auto">
-        <table class="min-w-full">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cargo</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Departamento</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cadastro</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200">
-            <tr v-for="employee in employeeStore.employees" :key="employee._id">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <div class="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center mr-3">
-                    {{ employee.name.charAt(0).toUpperCase() }}
-                  </div>
-                  {{ employee.name }}
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-gray-600">{{ employee.email }}</td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                  {{ getRoleLabel(employee.role) }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">{{ getDepartmentLabel(employee.department) }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-gray-600">{{ formatDate(employee.createdAt) }}</td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
-                  Ativo
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <!-- Data table -->
+      <v-data-table
+        v-else
+        :items="employeeStore.employees"
+        :headers="[
+          { title: 'Nome', key: 'name' },
+          { title: 'Email', key: 'email' },
+          { title: 'Cargo', key: 'role' },
+          { title: 'Departamento', key: 'department' },
+          { title: 'Cadastro', key: 'createdAt' },
+          { title: 'Status', key: 'status' }
+        ]"
+        class="elevation-0"
+        :items-per-page="10"
+      >
+        <template v-slot:item.name="{ item }">
+          <div class="d-flex align-center">
+            <v-avatar color="primary" class="me-3">
+              <span class="text-white">{{ item.name.charAt(0).toUpperCase() }}</span>
+            </v-avatar>
+            {{ item.name }}
+          </div>
+        </template>
+
+        <template v-slot:item.role="{ item }">
+          <v-chip
+            :color="
+              item.role === 'owner' ? 'purple' :
+              item.role === 'admin' ? 'primary' :
+              item.role === 'manager' ? 'info' : 'grey'
+            "
+            size="small"
+            variant="tonal"
+          >
+            {{ getRoleLabel(item.role) }}
+          </v-chip>
+        </template>
+
+        <template v-slot:item.department="{ item }">
+          {{ getDepartmentLabel(item.department) }}
+        </template>
+
+        <template v-slot:item.createdAt="{ item }">
+          {{ formatDate(item.createdAt) }}
+        </template>
+
+        <template v-slot:item.status="{ item }">
+          <v-chip
+            color="success"
+            size="small"
+            variant="tonal"
+          >
+            Ativo
+          </v-chip>
+        </template>
+      </v-data-table>
+    </v-card>
 
     <!-- Convites Pendentes -->
-    <div v-if="employeeStore.invitations.length > 0" class="card">
-      <div class="card-header">
-        <h2 class="text-lg font-semibold">Convites Pendentes</h2>
-      </div>
+    <v-card v-if="employeeStore.invitations.length > 0" elevation="4">
+      <v-card-title class="d-flex align-center bg-grey-lighten-5">
+        <v-icon class="me-2" color="warning">mdi-email-outline</v-icon>
+        Convites Pendentes
+      </v-card-title>
       
-      <div class="overflow-x-auto">
-        <table class="min-w-full">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cargo</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Departamento</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Enviado em</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expira em</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200">
-            <tr v-for="invite in employeeStore.invitations" :key="invite._id">
-              <td class="px-6 py-4 whitespace-nowrap font-medium">{{ invite.email }}</td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
-                  {{ getRoleLabel(invite.role) }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">{{ getDepartmentLabel(invite.department) }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-gray-600">{{ formatDate(invite.createdAt) }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-gray-600">{{ formatDate(invite.expiresAt) }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <v-data-table
+        :items="employeeStore.invitations"
+        :headers="[
+          { title: 'Email', key: 'email' },
+          { title: 'Cargo', key: 'role' },
+          { title: 'Departamento', key: 'department' },
+          { title: 'Enviado em', key: 'createdAt' },
+          { title: 'Expira em', key: 'expiresAt' }
+        ]"
+        class="elevation-0"
+        :items-per-page="10"
+      >
+        <template v-slot:item.email="{ item }">
+          <span class="font-weight-medium">{{ item.email }}</span>
+        </template>
+
+        <template v-slot:item.role="{ item }">
+          <v-chip
+            color="warning"
+            size="small"
+            variant="tonal"
+          >
+            {{ getRoleLabel(item.role) }}
+          </v-chip>
+        </template>
+
+        <template v-slot:item.department="{ item }">
+          {{ getDepartmentLabel(item.department) }}
+        </template>
+
+        <template v-slot:item.createdAt="{ item }">
+          {{ formatDate(item.createdAt) }}
+        </template>
+
+        <template v-slot:item.expiresAt="{ item }">
+          {{ formatDate(item.expiresAt) }}
+        </template>
+      </v-data-table>
+    </v-card>
 
     <!-- Modal de Convite -->
-    <div v-if="showInviteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-full max-w-md">
-        <h3 class="text-lg font-semibold mb-4">Convidar Funcionário</h3>
-        <InviteForm @close="closeInviteModal" @success="closeInviteModal" />
-      </div>
-    </div>
-  </div>
+    <v-dialog v-model="showInviteModal" max-width="500">
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          <v-icon class="me-2" color="primary">mdi-account-plus</v-icon>
+          Convidar Funcionário
+        </v-card-title>
+        
+        <v-card-text>
+          <InviteForm @close="closeInviteModal" @success="closeInviteModal" />
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+  </v-container>
 </template>

@@ -77,87 +77,142 @@ const close = () => {
 <template>
   <div>
     <!-- Mensagem de Sucesso -->
-    <div v-if="successMessage" class="mb-4 p-4 bg-green-50 border-l-4 border-green-500">
-      <div class="flex justify-between items-start">
-        <div>
-          <p class="text-green-700 font-medium">{{ successMessage }}</p>
-          <p class="text-sm text-green-600 mt-1">Compartilhe o link abaixo com o funcionário:</p>
-          <div class="mt-2 p-2 bg-gray-100 rounded text-sm break-all">
-            {{ inviteLink }}
-          </div>
-          <button @click="copyLink" class="mt-2 text-sm text-green-600 hover:text-green-800">
-            📋 Copiar Link
-          </button>
-        </div>
-        <button @click="close" class="text-green-400 hover:text-green-600">
-          <span class="material-icons">close</span>
-        </button>
+    <v-alert
+      v-if="successMessage"
+      type="success"
+      variant="tonal"
+      class="mb-4"
+      closable
+      @click:close="close"
+    >
+      <div>
+        <div class="font-weight-medium mb-2">{{ successMessage }}</div>
+        <div class="text-body-2 mb-3">Compartilhe o link abaixo com o funcionário:</div>
+        
+        <v-card variant="outlined" class="mb-3">
+          <v-card-text class="pa-3">
+            <div class="text-body-2 text-break">{{ inviteLink }}</div>
+          </v-card-text>
+        </v-card>
+        
+        <v-btn
+          @click="copyLink"
+          size="small"
+          variant="outlined"
+          prepend-icon="mdi-content-copy"
+        >
+          Copiar Link
+        </v-btn>
       </div>
-    </div>
+    </v-alert>
 
     <!-- Formulário -->
-    <form v-else @submit.prevent="sendInvite" class="space-y-4">
+    <v-form v-else @submit.prevent="sendInvite">
       <!-- Mensagem de Erro -->
-      <div v-if="errorMessage" class="p-4 bg-red-50 border-l-4 border-red-500">
-        <p class="text-red-700">{{ errorMessage }}</p>
-      </div>
+      <v-alert
+        v-if="errorMessage"
+        type="error"
+        variant="tonal"
+        class="mb-4"
+        closable
+        @click:close="errorMessage = ''"
+      >
+        {{ errorMessage }}
+      </v-alert>
 
       <!-- Email -->
-      <div>
-        <label for="email" class="form-label">Email <span class="text-red-500">*</span></label>
-        <input
-          id="email"
-          v-model="form.email"
-          type="email"
-          required
-          class="form-input"
-          placeholder="email@exemplo.com"
-        />
-      </div>
+      <v-text-field
+        v-model="form.email"
+        label="Email"
+        type="email"
+        variant="outlined"
+        density="compact"
+        required
+        class="mb-4"
+        prepend-inner-icon="mdi-email"
+        placeholder="email@exemplo.com"
+      ></v-text-field>
 
       <!-- Cargo -->
-      <div>
-        <label for="role" class="form-label">Cargo</label>
-        <select id="role" v-model="form.role" class="form-input">
-          <option v-for="option in roleOptions" :key="option.value" :value="option.value">
-            {{ option.label }}
-          </option>
-        </select>
-      </div>
+      <v-select
+        v-model="form.role"
+        :items="roleOptions"
+        item-title="label"
+        item-value="value"
+        label="Cargo"
+        variant="outlined"
+        density="compact"
+        class="mb-4"
+        prepend-inner-icon="mdi-briefcase"
+      ></v-select>
 
       <!-- Departamento -->
-      <div>
-        <label for="department" class="form-label">Departamento</label>
-        <select id="department" v-model="form.department" class="form-input">
-          <option v-for="option in departmentOptions" :key="option.value" :value="option.value">
-            {{ option.label }}
-          </option>
-        </select>
-      </div>
+      <v-select
+        v-model="form.department"
+        :items="departmentOptions"
+        item-title="label"
+        item-value="value"
+        label="Departamento"
+        variant="outlined"
+        density="compact"
+        class="mb-4"
+        prepend-inner-icon="mdi-domain"
+      ></v-select>
 
       <!-- Permissões Automáticas -->
-      <div class="p-3 bg-blue-50 rounded">
-        <h4 class="text-sm font-medium text-blue-800 mb-2">Permissões que serão concedidas:</h4>
-        <ul class="text-xs text-blue-700 space-y-1">
-          <li>✅ Tarefas (sempre)</li>
-          <li v-if="form.role === 'admin' || form.department === 'financeiro' || form.department === 'vendas'">✅ Financeiro</li>
-          <li v-if="form.role === 'admin' || form.department === 'estoque'">✅ Estoque</li>
-          <li v-if="form.role === 'admin' || form.department === 'rh'">✅ Recursos Humanos</li>
-        </ul>
-      </div>
+      <v-card variant="tonal" color="info" class="mb-6">
+        <v-card-title class="text-body-1">
+          <v-icon class="me-2">mdi-shield-check</v-icon>
+          Permissões que serão concedidas:
+        </v-card-title>
+        
+        <v-card-text class="pt-0">
+          <v-list density="compact">
+            <v-list-item prepend-icon="mdi-check-circle" class="text-body-2">
+              Tarefas (sempre)
+            </v-list-item>
+            <v-list-item 
+              v-if="form.role === 'admin' || form.department === 'financeiro' || form.department === 'vendas'"
+              prepend-icon="mdi-check-circle"
+              class="text-body-2"
+            >
+              Financeiro
+            </v-list-item>
+            <v-list-item 
+              v-if="form.role === 'admin' || form.department === 'estoque'"
+              prepend-icon="mdi-check-circle"
+              class="text-body-2"
+            >
+              Estoque
+            </v-list-item>
+            <v-list-item 
+              v-if="form.role === 'admin' || form.department === 'rh'"
+              prepend-icon="mdi-check-circle"
+              class="text-body-2"
+            >
+              Recursos Humanos
+            </v-list-item>
+          </v-list>
+        </v-card-text>
+      </v-card>
 
       <!-- Botões -->
-      <div class="flex justify-end space-x-3">
-        <button type="button" @click="close" class="btn btn-outline">
+      <div class="d-flex justify-end ga-3">
+        <v-btn
+          @click="close"
+          variant="outlined"
+        >
           Cancelar
-        </button>
-        <button type="submit" :disabled="isLoading" class="btn btn-primary">
-          <span v-if="isLoading" class="animate-spin mr-2">
-            <span class="material-icons text-sm">refresh</span>
-          </span>
+        </v-btn>
+        
+        <v-btn
+          type="submit"
+          :loading="isLoading"
+          color="primary"
+        >
           Enviar Convite
-        </button>
+        </v-btn>
       </div>
-    </form>
+    </v-form>
   </div>
 </template>

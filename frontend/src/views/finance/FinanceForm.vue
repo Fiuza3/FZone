@@ -44,6 +44,7 @@ const categoryOptions = computed(() => {
       { value: 'aluguel', title: 'Aluguel' },
       { value: 'marketing', title: 'Marketing' },
       { value: 'manutencao', title: 'Manutenção' },
+      { value: 'operacional', title: 'Operacional' },
       { value: 'outros', title: 'Outros' }
     ];
   }
